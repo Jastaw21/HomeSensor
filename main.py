@@ -23,7 +23,15 @@ def receive_data(reading: SensorReading, session: Session = Depends(get_session)
 @app.get("/data")
 def get_readings(session: Session = Depends(get_session)):
     readings = session.exec(select(SensorReading)).all()
-    return readings
+    result = []
+    for r in readings:
+        sensor = session.get(Sensor, r.sensor_id) if r.sensor_id else None
+        result.append({"id": r.id,
+                       "temp": r.temp,
+                       "humidity": r.humidity,
+                       "timestamp": r.timestamp,
+                       "sensor": sensor.name if sensor else None})
+    return result
 
 
 @app.post("/sensors")
