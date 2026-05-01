@@ -1,6 +1,7 @@
-from sqlmodel import SQLModel, Field
 from datetime import datetime
 from typing import Optional
+
+from sqlmodel import SQLModel, Field
 
 
 class SensorReading(SQLModel, table=True):
@@ -8,3 +9,4 @@ class SensorReading(SQLModel, table=True):
     temp: float
     humidity: float
     timestamp: datetime = Field(default_factory=datetime.utcnow)
+    sensor_id: Optional[int] = Field(default=None)
