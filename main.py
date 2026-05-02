@@ -1,15 +1,19 @@
 import os
 
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends, HTTPException, Request
+from fastapi.responses import FileResponse
 from fastapi.security import APIKeyHeader
+from fastapi.staticfiles import StaticFiles
 from sqlmodel import Session, select
 
 from database import init_db, get_session
 from models import SensorReading, Sensor
 
 app = FastAPI()
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
 API_KEY = os.environ.get("API_KEY")
-api_key_header = APIKeyHeader(name="X-API-KEY")
+api_key_header = APIKeyHeader(name="X-API-KEY", auto_error=False)
 
 
 def verify_key(key: str = Depends(api_key_header)):
@@ -20,6 +24,14 @@ def verify_key(key: str = Depends(api_key_header)):
 @app.on_event("startup")
 def on_startup():
     init_db()
+
+
+@app.get("/")
+def dashboard(request: Request):
+    key = request.query_params.get("key")
+    if key != API_KEY:
+        raise HTTPException(status_code=403, detail="Forbidden")
+    return FileResponse("static/index.html")
 
 
 @app.post("/data", dependencies=[Depends(verify_key)])
@@ -36,11 +48,14 @@ def get_readings(session: Session = Depends(get_session)):
     result = []
     for r in readings:
         sensor = session.get(Sensor, r.sensor_id) if r.sensor_id else None
-        result.append({"id": r.id,
-                       "temp": r.temp,
-                       "humidity": r.humidity,
-                       "timestamp": r.timestamp,
-                       "sensor": sensor.name if sensor else None})
+        result.append({
+            "id": r.id,
+            "temp": r.temp,
+            "humidity": r.humidity,
+            "timestamp": r.timestamp,
+            "sensor_id": r.sensor_id,
+            "sensor": sensor.name if sensor else None
+        })
     return result
 
 
