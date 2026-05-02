@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chestnut Home Dashboard</title>
     <script src="https://cdn.jsdelivr.net/npm/plotly.js-dist@2.27.0/plotly.min.js"></script>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="/static/styles.css">
 
 </head>
 <body>
@@ -13,10 +13,10 @@
 <p class="subtitle" id="status">Loading...</p>
 
 <div class="filter-row">
-    <select id="sensor-filter">
+    <label for="sensor-filter"></label><select id="sensor-filter">
         <option value="all">All sensors</option>
     </select>
-    <select id="range-filter">
+    <label for="range-filter"></label><select id="range-filter">
         <option value="1">Last hour</option>
         <option value="24">Last 24 hours</option>
         <option value="48">Last 48 hours</option>
@@ -40,7 +40,7 @@
 <!--    <h2>Humidity</h2>-->
 <!--    <div id="chart-humidity"></div>-->
 <!--</div>-->
-<script src="plots.js"></script>
+<script src="/static/plots.js"></script>
 
 </body>
 </html>

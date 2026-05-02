@@ -1,4 +1,4 @@
-const MOCK = true;
+const MOCK = false;
 
 const key = new URLSearchParams(window.location.search).get('key');
 
@@ -72,7 +72,7 @@ async function loadData() {
     filtered.forEach(d => {
         const name = d.sensor_name || `Sensor ${d.sensor_id}`;
         if (!groups[name]) groups[name] = {times: [], temps: [], humids: []};
-        groups[name].times.push(d.timestamp);
+        groups[name].times.push(new Date(d.timestamp)); // in local time
         groups[name].temps.push(d.temp);
         groups[name].humids.push(d.humidity);
     });
@@ -99,6 +99,11 @@ async function loadData() {
 
     const overviewLayout = {
         ...layout_base,
+        xaxis: {
+            ...layout_base.xaxis,
+            tickformat: '%H:%M',
+            hoverformat: '%d %b %H:%M'
+        },
         yaxis: {...layout_base.yaxis, title: '°C'},
         yaxis2: {...layout_base.yaxis2, title: '%', overlaying: 'n', side: 'right'},
     };
