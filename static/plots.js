@@ -8,13 +8,20 @@ const layout_base = {
     plot_bgcolor: 'transparent',
     autosize: true,
     font: {color: '#1F1F1F', size: 12},
-    margin: {t: 10, r: 50, b: 50, l: 50},
+    margin: {t: 10, r: 50, b: 80, l: 50},
     xaxis: {gridcolor: '#A1A1A1', linecolor: '#A1A1A1', type: 'date'},
     yaxis: {gridcolor: '#A1A1A1', linecolor: '#A1A1A1'},
     yaxis2: {gridcolor: 'transparent', linecolor: '#A1A1A1'},
     hovermode: 'x unified',
-    showlegend: false,
-    //legend: {bgcolor: 'transparent', font: {color: '#EEFFF0'}, location: 'bottom right'},
+    legend: {
+        orientation: 'h',
+        x : 0.5,
+        xanchor: 'center',
+        y : -0.2,
+        yanchor: 'top',
+        bgcolor: '#222', font: {color: '#A1A1A1'}},
+    showlegend: true,
+    dragmode: false,
 };
 const config = {responsive: true, displayModeBar: false};
 
