@@ -1,4 +1,4 @@
-const MOCK =  false;
+const MOCK = true;
 
 const key = new URLSearchParams(window.location.search).get('key');
 
@@ -16,8 +16,8 @@ const layout_base = {
     font: {color: '#C4C4C4', size: 12, family: 'Roboto, sans-serif'},
     margin: {t: 10, r: 50, b: 50, l: 50},
     xaxis: {gridcolor: '#696969', linecolor: '#696969', type: 'date'},
-    yaxis: {gridcolor: '#696969', linecolor: '#696969', range:[15,25] },
-    yaxis2: {gridcolor: 'transparent', linecolor: '#696969', range: [20,100]},
+    yaxis: {gridcolor: '#696969', linecolor: '#696969', range: [15, 25]},
+    yaxis2: {gridcolor: 'transparent', linecolor: '#696969', range: [20, 100]},
     hovermode: 'x unified',
     legend: {
         orientation: 'h',
@@ -46,6 +46,18 @@ function generateMockData() {
         });
     }
     return data;
+}
+
+async function getRecord(temp, high) {
+    const res = await fetch(`/data/record?temp=${temp}&high=${high}`, {
+        headers: {'X-API-Key': key}
+    });
+
+    if (!res.ok) {
+        throw new Error(`Failed to fetch record: ${res.status}`);
+    }
+
+    return await res.json();
 }
 
 async function loadData() {
@@ -143,6 +155,34 @@ async function loadData() {
     const formattedTime = rawTime ? parseUtcTimestamp(rawTime).toLocaleTimeString() : 'N/A';
     document.getElementById('timestamp-value').textContent =
         formattedTime || 'N/A';
+
+    const [
+        highestTemp,
+        lowestTemp,
+        highestHumidity,
+        lowestHumidity
+    ] = await Promise.all([
+        getRecord(true, true),
+        getRecord(true, false),
+        getRecord(false, true),
+        getRecord(false, false),
+    ]);
+
+    document.getElementById('highest-temp').textContent =
+        highestTemp?.temp?.toFixed(1) + ' C' || 'N/A';
+    document.getElementById('highest-temp-time').textContent =
+        highestTemp?.timestamp ? parseUtcTimestamp(highestTemp.timestamp).toLocaleTimeString() : 'N/A';
+    document.getElementById('lowest-temp').textContent =
+        lowestTemp?.temp?.toFixed(1) + ' C' || 'N/A';
+    document.getElementById('lowest-temp-time').textContent =
+        lowestTemp?.timestamp ? parseUtcTimestamp(lowestTemp.timestamp).toLocaleTimeString() : 'N/A';
+    document.getElementById('highest-humidity').textContent =
+        highestHumidity?.humidity?.toFixed(1) + ' %' || 'N/A';
+    document.getElementById('highest-humidity-time').textContent =
+        highestHumidity?.timestamp ? parseUtcTimestamp(highestHumidity.timestamp).toLocaleTimeString() : 'N/A';
+    document.getElementById('lowest-humidity').textContent =
+        lowestHumidity?.humidity?.toFixed(1) + ' %' || 'N/A';
+
 }
 
 document.getElementById('range-filter').addEventListener('change', loadData);

@@ -59,6 +59,58 @@ def get_readings(session: Session = Depends(get_session)):
     return result
 
 
+@app.get("/data/record")
+def get_record(temp: bool, high: bool, session: Session = Depends(get_session)):
+    record_value: float = 0
+    record_date: str = ""
+    if temp:
+        if high:
+            highest_temp = session.exec(
+                "SELECT MAX(temp) FROM sensor_reading"
+            )
+            # we might get multiple versions of the highest temp, so we need to get the most recent one
+            highest_temp_date = session.exec(
+                "SELECT timestamp FROM sensor_reading WHERE temp = (SELECT MAX(temp) FROM sensor_reading) order by "
+                "timestamp desc limit 1")
+
+            record_value = highest_temp[0][0]
+            record_date = highest_temp_date[0][0]
+        else:
+            lowest_temp = session.exec(
+                "SELECT MIN(temp) FROM sensor_reading"
+            )
+            # we might get multiple versions of the highest temp, so we need to get the most recent one
+            lowest_temp_date = session.exec(
+                "SELECT timestamp FROM sensor_reading WHERE temp = (SELECT MIN(temp) FROM sensor_reading) order by "
+                "timestamp desc limit 1")
+            record_value = lowest_temp[0][0]
+            record_date = lowest_temp_date[0][0]
+    else:
+        if high:
+            highest_humidity = session.exec(
+                "SELECT MAX(humidity) FROM sensor_reading"
+            )
+
+            highest_humidity_date = session.exec(
+                "SELECT timestamp FROM sensor_reading WHERE humidity = (SELECT MAX(humidity) FROM sensor_reading) "
+                "order by timestamp desc limit 1")
+
+            record_value = highest_humidity[0][0]
+            record_date = highest_humidity_date[0][0]
+
+        else:
+            lowest_humidity = session.exec(
+                "SELECT MIN(humidity) FROM sensor_reading"
+            )
+            lowest_humidity_date = session.exec(
+                "SELECT timestamp FROM sensor_reading WHERE humidity = (SELECT MIN(humidity) FROM sensor_reading) "
+                "order by timestamp desc limit 1")
+
+            record_value = lowest_humidity[0][0]
+            record_date = lowest_humidity_date[0][0]
+    return {"value": record_value, "date": record_date}
+
+
 @app.post("/sensors", dependencies=[Depends(verify_key)])
 def create_sensor(sensor: Sensor, session: Session = Depends(get_session)):
     session.add(sensor)
