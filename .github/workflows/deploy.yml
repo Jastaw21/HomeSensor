@@ -19,6 +19,7 @@ jobs:
           script: |
             cd /home/deploy/HomeSensor
             git pull origin main
+            sed -i 's/const MOCK = true/const MOCK = false/' static/plots.js
             source venv/bin/activate
             pip install -r requirements.txt
             sudo systemctl restart sensor-server
