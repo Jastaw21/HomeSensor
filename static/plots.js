@@ -46,7 +46,7 @@ async function loadData() {
     const hours = parseInt(document.getElementById('range-filter').value);
     if (hours > 0) {
         const cutoff = new Date(Date.now() - hours * 3600000);
-        data = data.filter(d => new Date(d.timestamp) >= cutoff);
+        data = data.filter(d => new Date(d.timestamp + 'Z') >= cutoff);
     }
 
     const sensorFilter = document.getElementById('sensor-filter').value;
@@ -72,7 +72,7 @@ async function loadData() {
     filtered.forEach(d => {
         const name = d.sensor_name || `Sensor ${d.sensor_id}`;
         if (!groups[name]) groups[name] = {times: [], temps: [], humids: []};
-        groups[name].times.push(new Date(d.timestamp)); // in local time
+        groups[name].times.push(new Date(d.timestamp + 'Z')); // in local time
         groups[name].temps.push(d.temp);
         groups[name].humids.push(d.humidity);
     });
