@@ -1,4 +1,4 @@
-const MOCK =  false;
+const MOCK =  true;
 
 const key = new URLSearchParams(window.location.search).get('key');
 
@@ -138,6 +138,11 @@ async function loadData() {
 
     document.getElementById('humidity-value').textContent =
         filtered.at(filtered.length - 1)?.humidity?.toFixed(1) + ' %' || 'N/A';
+
+    const rawTime = filtered.at(filtered.length - 1)?.timestamp;
+    const formattedTime = rawTime ? new Date(rawTime).toLocaleTimeString() : 'N/A';
+    document.getElementById('timestamp-value').textContent =
+        formattedTime || 'N/A';
 }
 
 document.getElementById('range-filter').addEventListener('change', loadData);

@@ -15,25 +15,29 @@
 
 <div class="filter-row">
     <label for="sensor-filter"></label><select id="sensor-filter">
-        <option value="all">All sensors</option>
-    </select>
+    <option value="all">All sensors</option>
+</select>
     <label for="range-filter"></label><select id="range-filter">
-        <option value="24" selected>Last 24 hours</option>
-        <option value="48">Last 48 hours</option>
-        <option value="168">Last 7 days</option>
-        <option value="0">All time</option>
-    </select>
+    <option value="24" selected>Last 24 hours</option>
+    <option value="48">Last 48 hours</option>
+    <option value="168">Last 7 days</option>
+    <option value="0">All time</option>
+</select>
     <button onclick="loadData()">Refresh</button>
 </div>
 
-<div class ="callout-container">
- <div class="callout" id="latest-temp">
-     <h2>Latest Temp</h2>
-     <p id = "temp-value">This is a callout with a title and description.</p>
- </div>
+<div class="callout-container">
+    <div class="callout" id="latest-reading">
+        <h2>Latest Reading</h2>
+        <p id="timestamp-value">This is a callout with a title and description.</p>
+    </div>
+    <div class="callout" id="latest-temp">
+        <h2>Latest Temp</h2>
+        <p id="temp-value">This is a callout with a title and description.</p>
+    </div>
     <div class="callout" id="latest-humidity">
-     <h2>Latest Humidity</h2>
-     <p id = "humidity-value">This is a callout with a title and description.</p>
+        <h2>Latest Humidity</h2>
+        <p id="humidity-value">This is a callout with a title and description.</p>
     </div>
 </div>
 
