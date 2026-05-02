@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chestnut Home Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/plotly.js-dist@2.27.0/plotly.min.js"></script>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: sans-serif; background: #0f1117; color: #e0e0e0; padding: 24px; }
+        h1 { font-size: 20px; font-weight: 500; margin-bottom: 8px; }
+        .subtitle { font-size: 13px; color: #888; margin-bottom: 24px; }
+        .card { background: #1a1d26; border-radius: 12px; padding: 20px; margin-bottom: 20px; }
+        .card h2 { font-size: 15px; font-weight: 500; margin-bottom: 16px; color: #ccc; }
+        .filter-row { display: flex; gap: 12px; margin-bottom: 20px; align-items: center; flex-wrap: wrap; }
+        select, button {
+         background: #1a1d26; color: #e0e0e0; border: 1px solid #2e3144;
+         border-radius: 8px; padding: 8px 14px; font-size: 13px; cursor: pointer;
+        }
+        button:hover { background: #22263a; }
+        #status { font-size: 12px; color: #555; margin-left: auto; }
+    </style>
+</head>
+<body>
+<h1>"Chestnut Home Info"</h1>
+<p class="subtitle" id="status">Loading...</p>
+
+  <div class="filter-row">
+    <select id="sensor-filter"><option value="all">All sensors</option></select>
+    <select id="range-filter">
+      <option value="24">Last 24 hours</option>
+      <option value="48">Last 48 hours</option>
+      <option value="168">Last 7 days</option>
+      <option value="0">All time</option>
+    </select>
+    <button onclick="loadData()">Refresh</button>
+  </div>
+
+  <div class="card">
+    <h2>Overview — temperature &amp; humidity</h2>
+    <div id="chart-overview"></div>
+  </div>
+
+  <div class="card">
+    <h2>Temperature</h2>
+    <div id="chart-temp"></div>
+  </div>
+
+  <div class="card">
+    <h2>Humidity</h2>
+    <div id="chart-humidity"></div>
+  </div>
+  <script>
+    const key = new URLSearchParams(window.location.search).get('key');
+    const layout_base = {
+      paper_bgcolor: 'transparent',
+      plot_bgcolor: 'transparent',
+      font: { color: '#ccc', size: 12 },
+      margin: { t: 10, r: 20, b: 50, l: 50 },
+      xaxis: { gridcolor: '#2a2d3a', linecolor: '#2a2d3a', type: 'date' },
+      yaxis: { gridcolor: '#2a2d3a', linecolor: '#2a2d3a' },
+      hovermode: 'x unified',
+      legend: { bgcolor: 'transparent' }
+    };
+    const config = { responsive: true, displayModeBar: false };
+
+    async function loadData() {
+      document.getElementById('status').textContent = 'Loading...';
+      const res = await fetch('/data', { headers: { 'X-API-Key': key } });
+      let data = await res.json();
+
+      const hours = parseInt(document.getElementById('range-filter').value);
+      if (hours > 0) {
+        const cutoff = new Date(Date.now() - hours * 3600000);
+        data = data.filter(d => new Date(d.timestamp) >= cutoff);
+      }
+
+      const sensorFilter = document.getElementById('sensor-filter').value;
+
+      // Populate sensor dropdown
+      const sensors = [...new Set(data.map(d => d.sensor_name || `Sensor ${d.sensor_id}`))];
+      const sel = document.getElementById('sensor-filter');
+      const current = sel.value;
+      sel.innerHTML = '<option value="all">All sensors</option>';
+      sensors.forEach(s => {
+        const opt = document.createElement('option');
+        opt.value = s; opt.textContent = s;
+        if (s === current) opt.selected = true;
+        sel.appendChild(opt);
+      });
+
+      const filtered = sensorFilter === 'all' ? data
+        : data.filter(d => (d.sensor_name || `Sensor ${d.sensor_id}`) === sensorFilter);
+
+      // Group by sensor
+      const groups = {};
+      filtered.forEach(d => {
+        const name = d.sensor_name || `Sensor ${d.sensor_id}`;
+        if (!groups[name]) groups[name] = { times: [], temps: [], humids: [] };
+        groups[name].times.push(d.timestamp);
+        groups[name].temps.push(d.temp);
+        groups[name].humids.push(d.humidity);
+      });
+
+      const colors = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
+      let ci = 0;
+
+      const overviewTraces = [];
+      const tempTraces = [];
+      const humidTraces = [];
+
+      for (const [name, g] of Object.entries(groups)) {
+        const col = colors[ci++ % colors.length];
+        tempTraces.push({
+          x: g.times, y: g.temps, name,
+          mode: 'lines', line: { color: col, width: 2 },
+          hovertemplate: '%{y:.1f}°C'
+        });
+        humidTraces.push({
+          x: g.times, y: g.humids, name,
+          mode: 'lines', line: { color: col, width: 2, dash: 'dot' },
+          hovertemplate: '%{y:.1f}%'
+        });
+        overviewTraces.push({
+          x: g.times, y: g.temps, name: `${name} temp`,
+          mode: 'lines', line: { color: col, width: 2 },
+          hovertemplate: '%{y:.1f}°C'
+        });
+        overviewTraces.push({
+          x: g.times, y: g.humids, name: `${name} humidity`,
+          mode: 'lines', line: { color: col, width: 1.5, dash: 'dot' },
+          yaxis: 'y2', hovertemplate: '%{y:.1f}%'
+        });
+      }
+
+      const overviewLayout = {
+        ...layout_base,
+        yaxis: { ...layout_base.yaxis, title: '°C' },
+        yaxis2: { ...layout_base.yaxis, title: '%', overlaying: 'y', side: 'right' }
+      };
+
+      Plotly.react('chart-overview', overviewTraces, overviewLayout, config);
+      Plotly.react('chart-temp', tempTraces,
+        { ...layout_base, yaxis: { ...layout_base.yaxis, title: '°C' } }, config);
+      Plotly.react('chart-humidity', humidTraces,
+        { ...layout_base, yaxis: { ...layout_base.yaxis, title: '%' } }, config);
+
+      document.getElementById('status').textContent =
+        `${filtered.length} readings · updated ${new Date().toLocaleTimeString()}`;
+    }
+
+    document.getElementById('range-filter').addEventListener('change', loadData);
+    document.getElementById('sensor-filter').addEventListener('change', loadData);
+
+    loadData();
+    setInterval(loadData, 60000); // auto-refresh every minute
+  </script>
+
+</body>
+</html>
