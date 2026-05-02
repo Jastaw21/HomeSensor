@@ -2,6 +2,12 @@ const MOCK = false;
 
 const key = new URLSearchParams(window.location.search).get('key');
 
+function parseUtcTimestamp(timestamp) {
+    if (!timestamp) return null;
+
+    const hasTimezone = /(?:Z|[+-]\d{2}:?\d{2})$/.test(timestamp);
+    return new Date(hasTimezone ? timestamp : `${timestamp}Z`);
+}
 
 const layout_base = {
     paper_bgcolor: 'transparent',
@@ -49,12 +55,15 @@ async function loadData() {
         document.getElementById('status').textContent = 'Loading...';
         const res = await fetch('/data', {headers: {'X-API-Key': key}});
         data = await res.json();
+
     }
+
+    console.log(data[0]);
 
     const hours = parseInt(document.getElementById('range-filter').value);
     if (hours > 0) {
         const cutoff = new Date(Date.now() - hours * 3600000);
-        data = data.filter(d => new Date(d.timestamp + 'Z') >= cutoff);
+        data = data.filter(d => parseUtcTimestamp(d.timestamp) >= cutoff);
     }
 
     const sensorFilter = document.getElementById('sensor-filter').value;
@@ -80,7 +89,7 @@ async function loadData() {
     filtered.forEach(d => {
         const name = d.sensor_name || `Sensor ${d.sensor_id}`;
         if (!groups[name]) groups[name] = {times: [], temps: [], humids: []};
-        groups[name].times.push(new Date(d.timestamp + 'Z')); // in local time
+        groups[name].times.push(parseUtcTimestamp(d.timestamp)); // in local time
         groups[name].temps.push(d.temp);
         groups[name].humids.push(d.humidity);
     });
