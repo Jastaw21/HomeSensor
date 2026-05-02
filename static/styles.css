@@ -1,23 +1,77 @@
-* { box-sizing: border-box; margin: 0; padding: 0; }
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
 
 body {
-        font-family: arial, serif; background: #1F1F1F; color: #E8E8E8; padding: 24px; }
+    font-family: arial, serif;
+    background: #1F1F1F;
+    color: #E8E8E8;
+    padding: 24px;
+}
 
-h1 { font-size: 30px; font-weight: 500; margin-bottom: 8px; }
+h1 {
+    font-size: 30px;
+    font-weight: 500;
+    margin-bottom: 8px;
+}
 
-.subtitle { font-size: 13px; color: #575757; margin-bottom: 24px; }
+.subtitle {
+    font-size: 13px;
+    color: #575757;
+    margin-bottom: 24px;
+}
 
-.card { background: #F2F2F2; border-radius: 12px; padding: 12px; margin-bottom: 12px; }
+.card {
 
-.card h2 { font-size: 18px; font-weight: 600; margin-bottom: 6px; color: #1F1F1F; align-self: center; }
+    background: #1F1F1F;
+    border-radius: 6px;
+    padding: 6px;
+    margin-bottom: 6px;
+    border-color: #696969;
+    border-width: 2px;
+    border-style: solid;
+}
 
-.filter-row { display: flex; gap: 12px; margin-bottom: 10px; align-items: center; flex-wrap: wrap; }
+.card h2 {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: #1F1F1F;
+    align-self: center;
+}
+
+.filter-row {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
 select, button {
-        background: #1E6633; color: #F3FFF2; border: 1px solid #111111;
-        border-radius: 8px; padding: 6px 6px; font-size: 12px; cursor: pointer;
-        }
+    background: #12c35a;
+    color: #F3FFF2;
+    border: 1px solid #111111;
+    border-radius: 8px;
+    padding: 6px 6px;
+    font-size: 12px;
+    cursor: pointer;
+}
 
-button:hover { background: #befcc8; color: #383838 }
-select:hover { background: #befcc8; color: #383838}
+button:hover {
+    background: #befcc8;
+    color: #383838
+}
 
-#status { font-size: 12px; color: #888; margin-left: auto; }
+select:hover {
+    background: #befcc8;
+    color: #383838
+}
+
+#status {
+    font-size: 12px;
+    color: #888;
+    margin-left: auto;
+}

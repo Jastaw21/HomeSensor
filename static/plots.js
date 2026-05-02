@@ -1,4 +1,4 @@
-const MOCK = false;
+const MOCK = true;
 
 const key = new URLSearchParams(window.location.search).get('key');
 
@@ -13,19 +13,20 @@ const layout_base = {
     paper_bgcolor: 'transparent',
     plot_bgcolor: 'transparent',
     autosize: true,
-    font: {color: '#1F1F1F', size: 12},
-    margin: {t: 10, r: 50, b: 80, l: 50},
-    xaxis: {gridcolor: '#A1A1A1', linecolor: '#A1A1A1', type: 'date'},
-    yaxis: {gridcolor: '#A1A1A1', linecolor: '#A1A1A1'},
-    yaxis2: {gridcolor: 'transparent', linecolor: '#A1A1A1'},
+    font: {color: '#DBDBDB', size: 12, family: 'Roboto, sans-serif'},
+    margin: {t: 10, r: 50, b: 70, l: 50},
+    xaxis: {gridcolor: '#DBDBDB', linecolor: '#DBDBDB', type: 'date'},
+    yaxis: {gridcolor: '#DBDBDB', linecolor: '#DBDBDB', range: [10, 30]},
+    yaxis2: {gridcolor: 'transparent', linecolor: '#DBDBDB',range: [0, 100]},
     hovermode: 'x unified',
     legend: {
         orientation: 'h',
-        x : 0.5,
+        x: 0.5,
         xanchor: 'center',
-        y : -0.2,
+        y: -0.2,
         yanchor: 'top',
-        bgcolor: '#222', font: {color: '#A1A1A1'}},
+        bgcolor: '#222', font: {color: '#A1A1A1'}
+    },
     showlegend: true,
     dragmode: false,
 };
@@ -104,7 +105,7 @@ async function loadData() {
 
         overviewTraces.push({
             x: g.times, y: g.temps, name: `${name} temp`,
-            mode: 'lines+markers', line: {color: col, width: 2},
+            mode: 'lines', line: {color: col, width: 2},
             hovertemplate: '%{y:.1f}°C'
         });
         overviewTraces.push({
@@ -122,7 +123,7 @@ async function loadData() {
             hoverformat: '%d %b %H:%M'
         },
         yaxis: {...layout_base.yaxis, title: '°C'},
-        yaxis2: {...layout_base.yaxis2, title: '%', overlaying: 'n', side: 'right'},
+        yaxis2: {...layout_base.yaxis2, title: '%', overlaying: 'y', side: 'right'},
     };
 
     Plotly.purge('chart-overview');
