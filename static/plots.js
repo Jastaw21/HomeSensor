@@ -61,19 +61,19 @@ async function getRecord(temp, high) {
 }
 
 function getAllTimeRecords(highestTemp, lowestTemp, highestHumidity, lowestHumidity) {
-    document.getElementById('highest-temp').textContent =
+    document.getElementById('record-high_value').textContent =
         highestTemp?.temp?.toFixed(1) + ' C' || 'N/A';
-    document.getElementById('highest-temp-time').textContent =
+    document.getElementById('ecord_ht_date').textContent =
         highestTemp?.timestamp ? parseUtcTimestamp(highestTemp.timestamp).toLocaleTimeString() : 'N/A';
-    document.getElementById('lowest-temp').textContent =
+    document.getElementById('record-low-value').textContent =
         lowestTemp?.temp?.toFixed(1) + ' C' || 'N/A';
-    document.getElementById('lowest-temp-time').textContent =
+    document.getElementById('record_lt_date').textContent =
         lowestTemp?.timestamp ? parseUtcTimestamp(lowestTemp.timestamp).toLocaleTimeString() : 'N/A';
-    document.getElementById('highest-humidity').textContent =
+    document.getElementById('record-high-h-value').textContent =
         highestHumidity?.humidity?.toFixed(1) + ' %' || 'N/A';
-    document.getElementById('highest-humidity-time').textContent =
+    document.getElementById('record_hh_date').textContent =
         highestHumidity?.timestamp ? parseUtcTimestamp(highestHumidity.timestamp).toLocaleTimeString() : 'N/A';
-    document.getElementById('lowest-humidity').textContent =
+    document.getElementById('record-low-h-value').textContent =
         lowestHumidity?.humidity?.toFixed(1) + ' %' || 'N/A';
 }
 
@@ -88,7 +88,7 @@ async function loadData() {
 
     }
 
-    console.log(data[0]);
+
 
     const hours = parseInt(document.getElementById('range-filter').value);
     if (hours > 0) {
@@ -184,6 +184,10 @@ async function loadData() {
         getRecord(false, true),
         getRecord(false, false),
     ]);
+    console.log(highestTemp);
+    console.log(lowestTemp);
+    console.log(highestHumidity);
+    console.log(lowestHumidity);
 
     getAllTimeRecords(highestTemp, lowestTemp, highestHumidity, lowestHumidity);
 
