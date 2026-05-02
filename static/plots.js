@@ -1,4 +1,4 @@
-const MOCK =  false;
+const MOCK =  true;
 
 const key = new URLSearchParams(window.location.search).get('key');
 
