@@ -84,7 +84,7 @@ def get_record(temp: bool, high: bool, session: Session = Depends(get_session)):
         ).first()
         if not result:
             return {}
-        return {temp: result[0], "humidity": result[1], "date": result[2]}
+        return {"temp": result[0], "humidity": result[1], "timestamp": result[2]}
 
 @app.post("/sensors", dependencies=[Depends(verify_key)])
 def create_sensor(sensor: Sensor, session: Session = Depends(get_session)):
