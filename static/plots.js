@@ -41,7 +41,7 @@ function generateMockData() {
             humidity: 55 + Math.cos(i / 15) * 8 + Math.random(),
             timestamp: new Date(now - i * 5 * 60000).toISOString(),
             sensor_id: 1,
-            sensor_name: "living room"
+            sensor: "living room"
         });
     }
     return data;
@@ -69,7 +69,7 @@ async function loadData() {
     const sensorFilter = document.getElementById('sensor-filter').value;
 
     // Populate sensor dropdown
-    const sensors = [...new Set(data.map(d => d.sensor_name || `Sensor ${d.sensor_id}`))];
+    const sensors = [...new Set(data.map(d => d.sensor || `Sensor ${d.sensor_id}`))];
     const sel = document.getElementById('sensor-filter');
     const current = sel.value;
     sel.innerHTML = '<option value="all">All sensors</option>';
@@ -82,12 +82,12 @@ async function loadData() {
     });
 
     const filtered = sensorFilter === 'all' ? data
-        : data.filter(d => (d.sensor_name || `Sensor ${d.sensor_id}`) === sensorFilter);
+        : data.filter(d => (d.sensor || `Sensor ${d.sensor_id}`) === sensorFilter);
 
     // Group by sensor
     const groups = {};
     filtered.forEach(d => {
-        const name = d.sensor_name || `Sensor ${d.sensor_id}`;
+        const name = d.sensor || `Sensor ${d.sensor_id}`;
         if (!groups[name]) groups[name] = {times: [], temps: [], humids: []};
         groups[name].times.push(parseUtcTimestamp(d.timestamp)); // in local time
         groups[name].temps.push(d.temp);
