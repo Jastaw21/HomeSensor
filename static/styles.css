@@ -38,7 +38,7 @@ h1 {
     font-size: 18px;
     font-weight: 600;
     margin-bottom: 6px;
-    color: #1F1F1F;
+    color: #DBDBDB;
     align-self: center;
 }
 
@@ -48,6 +48,27 @@ h1 {
     margin-bottom: 10px;
     align-items: center;
     flex-wrap: wrap;
+}
+
+.callout-container {
+    display: flex;
+    flex-direction: row;
+    gap: 6px;
+    border-color: #696969;
+    border-width: 2px;
+    align-items: stretch;
+    width: 100%;
+}
+.callout{
+    background: #1F1F1F;
+    border-radius: 6px;
+    padding: 6px;
+    margin-bottom: 6px;
+    border-color: #696969;
+    border-width: 2px;
+    border-style: solid;
+    text-align: center;
+    flex: 1;
 }
 
 select, button {
