@@ -61,17 +61,17 @@ async function getRecord(temp, high) {
 }
 
 function getAllTimeRecords(highestTemp, lowestTemp, highestHumidity, lowestHumidity) {
-    document.getElementById('record-high_value').textContent =
+    document.getElementById('record-high-value').textContent =
         highestTemp?.temp?.toFixed(1) + ' C' || 'N/A';
-    document.getElementById('ecord_ht_date').textContent =
+    document.getElementById('record-ht-date').textContent =
         highestTemp?.timestamp ? parseUtcTimestamp(highestTemp.timestamp).toLocaleTimeString() : 'N/A';
     document.getElementById('record-low-value').textContent =
         lowestTemp?.temp?.toFixed(1) + ' C' || 'N/A';
-    document.getElementById('record_lt_date').textContent =
+    document.getElementById('record-lt-date').textContent =
         lowestTemp?.timestamp ? parseUtcTimestamp(lowestTemp.timestamp).toLocaleTimeString() : 'N/A';
     document.getElementById('record-high-h-value').textContent =
         highestHumidity?.humidity?.toFixed(1) + ' %' || 'N/A';
-    document.getElementById('record_hh_date').textContent =
+    document.getElementById('record-hh-date').textContent =
         highestHumidity?.timestamp ? parseUtcTimestamp(highestHumidity.timestamp).toLocaleTimeString() : 'N/A';
     document.getElementById('record-low-h-value').textContent =
         lowestHumidity?.humidity?.toFixed(1) + ' %' || 'N/A';
