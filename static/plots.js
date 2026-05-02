@@ -6,6 +6,7 @@ const key = new URLSearchParams(window.location.search).get('key');
 const layout_base = {
     paper_bgcolor: 'transparent',
     plot_bgcolor: 'transparent',
+    autosize: true,
     font: {color: '#1F1F1F', size: 12},
     margin: {t: 10, r: 50, b: 50, l: 50},
     xaxis: {gridcolor: '#A1A1A1', linecolor: '#A1A1A1', type: 'date'},
@@ -108,7 +109,8 @@ async function loadData() {
         yaxis2: {...layout_base.yaxis2, title: '%', overlaying: 'n', side: 'right'},
     };
 
-    Plotly.react('chart-overview', overviewTraces, overviewLayout, config);
+    Plotly.purge('chart-overview');
+    Plotly.newPlot('chart-overview', overviewTraces, overviewLayout, config);
 
 
     document.getElementById('status').textContent =
