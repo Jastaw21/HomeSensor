@@ -14,7 +14,7 @@ const layout_base = {
     plot_bgcolor: 'transparent',
     autosize: true,
     font: {color: '#DBDBDB', size: 12, family: 'Roboto, sans-serif'},
-    margin: {t: 10, r: 50, b: 70, l: 50},
+    margin: {t: 11, r: 50, b: 70, l: 50},
     xaxis: {gridcolor: '#DBDBDB', linecolor: '#DBDBDB', type: 'date'},
     yaxis: {gridcolor: '#DBDBDB', linecolor: '#DBDBDB', range:[15,25] },
     yaxis2: {gridcolor: 'transparent', linecolor: '#DBDBDB', range: [20,100]},
