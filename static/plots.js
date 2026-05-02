@@ -1,4 +1,4 @@
-const MOCK =  false;
+const MOCK =  true;
 
 const key = new URLSearchParams(window.location.search).get('key');
 
@@ -16,8 +16,8 @@ const layout_base = {
     font: {color: '#DBDBDB', size: 12, family: 'Roboto, sans-serif'},
     margin: {t: 10, r: 50, b: 70, l: 50},
     xaxis: {gridcolor: '#DBDBDB', linecolor: '#DBDBDB', type: 'date'},
-    yaxis: {gridcolor: '#DBDBDB', linecolor: '#DBDBDB'},
-    yaxis2: {gridcolor: 'transparent', linecolor: '#DBDBDB'},
+    yaxis: {gridcolor: '#DBDBDB', linecolor: '#DBDBDB', range:[15,25] },
+    yaxis2: {gridcolor: 'transparent', linecolor: '#DBDBDB', range: [20,100]},
     hovermode: 'x unified',
     legend: {
         orientation: 'h',
