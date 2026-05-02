@@ -12,6 +12,7 @@
 <h1>Chestnut Conditions</h1>
 <p class="subtitle" id="status">Loading...</p>
 
+
 <div class="filter-row">
     <label for="sensor-filter"></label><select id="sensor-filter">
         <option value="all">All sensors</option>
@@ -25,20 +26,23 @@
     <button onclick="loadData()">Refresh</button>
 </div>
 
+<div class ="callout-container">
+ <div class="callout" id="latest-temp">
+     <h2>Latest Temp</h2>
+     <p id = "temp-value">This is a callout with a title and description.</p>
+ </div>
+    <div class="callout" id="latest-humidity">
+     <h2>Latest Humidity</h2>
+     <p id = "humidity-value">This is a callout with a title and description.</p>
+    </div>
+</div>
+
+
 <div class="card">
     <h2>Overview</h2>
     <div id="chart-overview"></div>
 </div>
 
-<!--<div class="card">-->
-<!--    <h2>Temperature</h2>-->
-<!--    <div id="chart-temp"></div>-->
-<!--</div>-->
-
-<!--<div class="card">-->
-<!--    <h2>Humidity</h2>-->
-<!--    <div id="chart-humidity"></div>-->
-<!--</div>-->
 <script src="/static/plots.js"></script>
 
 </body>
