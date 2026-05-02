@@ -140,7 +140,7 @@ async function loadData() {
         filtered.at(filtered.length - 1)?.humidity?.toFixed(1) + ' %' || 'N/A';
 
     const rawTime = filtered.at(filtered.length - 1)?.timestamp;
-    const formattedTime = rawTime ? new Date(rawTime).toLocaleTimeString() : 'N/A';
+    const formattedTime = rawTime ? parseUtcTimestamp(rawTime).toLocaleTimeString() : 'N/A';
     document.getElementById('timestamp-value').textContent =
         formattedTime || 'N/A';
 }
