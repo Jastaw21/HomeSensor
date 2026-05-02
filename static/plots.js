@@ -60,6 +60,23 @@ async function getRecord(temp, high) {
     return await res.json();
 }
 
+function getAllTimeRecords(highestTemp, lowestTemp, highestHumidity, lowestHumidity) {
+    document.getElementById('highest-temp').textContent =
+        highestTemp?.temp?.toFixed(1) + ' C' || 'N/A';
+    document.getElementById('highest-temp-time').textContent =
+        highestTemp?.timestamp ? parseUtcTimestamp(highestTemp.timestamp).toLocaleTimeString() : 'N/A';
+    document.getElementById('lowest-temp').textContent =
+        lowestTemp?.temp?.toFixed(1) + ' C' || 'N/A';
+    document.getElementById('lowest-temp-time').textContent =
+        lowestTemp?.timestamp ? parseUtcTimestamp(lowestTemp.timestamp).toLocaleTimeString() : 'N/A';
+    document.getElementById('highest-humidity').textContent =
+        highestHumidity?.humidity?.toFixed(1) + ' %' || 'N/A';
+    document.getElementById('highest-humidity-time').textContent =
+        highestHumidity?.timestamp ? parseUtcTimestamp(highestHumidity.timestamp).toLocaleTimeString() : 'N/A';
+    document.getElementById('lowest-humidity').textContent =
+        lowestHumidity?.humidity?.toFixed(1) + ' %' || 'N/A';
+}
+
 async function loadData() {
     let data;
     if (MOCK) {
@@ -168,20 +185,7 @@ async function loadData() {
         getRecord(false, false),
     ]);
 
-    document.getElementById('highest-temp').textContent =
-        highestTemp?.temp?.toFixed(1) + ' C' || 'N/A';
-    document.getElementById('highest-temp-time').textContent =
-        highestTemp?.timestamp ? parseUtcTimestamp(highestTemp.timestamp).toLocaleTimeString() : 'N/A';
-    document.getElementById('lowest-temp').textContent =
-        lowestTemp?.temp?.toFixed(1) + ' C' || 'N/A';
-    document.getElementById('lowest-temp-time').textContent =
-        lowestTemp?.timestamp ? parseUtcTimestamp(lowestTemp.timestamp).toLocaleTimeString() : 'N/A';
-    document.getElementById('highest-humidity').textContent =
-        highestHumidity?.humidity?.toFixed(1) + ' %' || 'N/A';
-    document.getElementById('highest-humidity-time').textContent =
-        highestHumidity?.timestamp ? parseUtcTimestamp(highestHumidity.timestamp).toLocaleTimeString() : 'N/A';
-    document.getElementById('lowest-humidity').textContent =
-        lowestHumidity?.humidity?.toFixed(1) + ' %' || 'N/A';
+    getAllTimeRecords(highestTemp, lowestTemp, highestHumidity, lowestHumidity);
 
 }
 

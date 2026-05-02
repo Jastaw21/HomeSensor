@@ -4,6 +4,7 @@ from fastapi import FastAPI, Depends, HTTPException, Request
 from fastapi.responses import FileResponse
 from fastapi.security import APIKeyHeader
 from fastapi.staticfiles import StaticFiles
+from sqlalchemy import text
 from sqlmodel import Session, select
 
 from database import init_db, get_session
@@ -63,53 +64,27 @@ def get_readings(session: Session = Depends(get_session)):
 def get_record(temp: bool, high: bool, session: Session = Depends(get_session)):
     record_value: float = 0
     record_date: str = ""
+    func = "MAX" if high else "MIN"
     if temp:
-        if high:
-            highest_temp = session.exec(
-                "SELECT MAX(temp) FROM sensor_reading"
-            )
-            # we might get multiple versions of the highest temp, so we need to get the most recent one
-            highest_temp_date = session.exec(
-                "SELECT timestamp FROM sensor_reading WHERE temp = (SELECT MAX(temp) FROM sensor_reading) order by "
-                "timestamp desc limit 1")
-
-            record_value = highest_temp[0][0]
-            record_date = highest_temp_date[0][0]
-        else:
-            lowest_temp = session.exec(
-                "SELECT MIN(temp) FROM sensor_reading"
-            )
-            # we might get multiple versions of the highest temp, so we need to get the most recent one
-            lowest_temp_date = session.exec(
-                "SELECT timestamp FROM sensor_reading WHERE temp = (SELECT MIN(temp) FROM sensor_reading) order by "
-                "timestamp desc limit 1")
-            record_value = lowest_temp[0][0]
-            record_date = lowest_temp_date[0][0]
+        result = session.exec(
+            text(
+                f"SELECT temp, humidity, timestamp FROM sensorreading "
+                f"WHERE temp = (SELECT {func}(temp) FROM sensorreading) "
+                f"ORDER BY timestamp DESC LIMIT 1")
+        ).first()
+        if not result:
+            return {}
+        return {temp: result[0], "humidity": result[1], "date": result[2]}
     else:
-        if high:
-            highest_humidity = session.exec(
-                "SELECT MAX(humidity) FROM sensor_reading"
-            )
+        result = session.exec(text(
+                f"SELECT temp, humidity, timestamp FROM sensorreading "
+                f"WHERE humidity = (SELECT {func}(humidity) FROM sensorreading) "
+                f"ORDER BY timestamp DESC LIMIT 1")
 
-            highest_humidity_date = session.exec(
-                "SELECT timestamp FROM sensor_reading WHERE humidity = (SELECT MAX(humidity) FROM sensor_reading) "
-                "order by timestamp desc limit 1")
-
-            record_value = highest_humidity[0][0]
-            record_date = highest_humidity_date[0][0]
-
-        else:
-            lowest_humidity = session.exec(
-                "SELECT MIN(humidity) FROM sensor_reading"
-            )
-            lowest_humidity_date = session.exec(
-                "SELECT timestamp FROM sensor_reading WHERE humidity = (SELECT MIN(humidity) FROM sensor_reading) "
-                "order by timestamp desc limit 1")
-
-            record_value = lowest_humidity[0][0]
-            record_date = lowest_humidity_date[0][0]
-    return {"value": record_value, "date": record_date}
-
+        ).first()
+        if not result:
+            return {}
+        return {temp: result[0], "humidity": result[1], "date": result[2]}
 
 @app.post("/sensors", dependencies=[Depends(verify_key)])
 def create_sensor(sensor: Sensor, session: Session = Depends(get_session)):
