@@ -128,7 +128,7 @@ async function loadData() {
         groups[name].humids.push(d.humidity);
     });
 
-    const colors = ['#12c35a', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
+    const colors = ['#111111', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
     let ci = 0;
 
     const overviewTraces = [];
@@ -180,10 +180,10 @@ async function loadData() {
 
     const records = await getRecords();
     setRecordValues(
-        records.find(r => r.type === 'high-temp')
-        , records.find(r => r.type === 'low-temp')
-        , records.find(r => r.type === 'high-humidity')
-        , records.find(r => r.type === 'low-humidity')
+        records.find(r => r.type === 'high_temp')
+        , records.find(r => r.type === 'low_temp')
+        , records.find(r => r.type === 'high_humidity')
+        , records.find(r => r.type === 'low_humidity')
     )
 
 
