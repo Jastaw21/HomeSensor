@@ -96,11 +96,11 @@ def create_sensor(sensor: Sensor, session: Session = Depends(get_session)):
 @app.get("/records")
 def get_records(session: Session = Depends(get_session)):
     highTemp = session.exec(text("SELECT temp, timestamp FROM sensorreading ORDER BY temp DESC LIMIT 1")).all()
-    lowTemp = session.exec(text("SELECT temp, timestamp FROM sensorreading ORDER BY temp ASC LIMIT 1")).all()
-
-    highHumidity = session.exec(text("SELECT humidity, timestamp FROM sensorreading ORDER BY humidity DESC LIMIT 1")).all()
-    lowHumidity = session.exec(text("SELECT humidity, timestamp FROM sensorreading ORDER BY humidity ASC LIMIT 1")).all()
-
+    # lowTemp = session.exec(text("SELECT temp, timestamp FROM sensorreading ORDER BY temp ASC LIMIT 1")).all()
+    #
+    # highHumidity = session.exec(text("SELECT humidity, timestamp FROM sensorreading ORDER BY humidity DESC LIMIT 1")).all()
+    # lowHumidity = session.exec(text("SELECT humidity, timestamp FROM sensorreading ORDER BY humidity ASC LIMIT 1")).all()
+    return highTemp
     return {"highTemp": highTemp, "lowTemp": lowTemp, "highHumidity": highHumidity, "lowHumidity": lowHumidity}
 
 @app.get("/sensors", dependencies=[Depends(verify_key)])
