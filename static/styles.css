@@ -57,6 +57,7 @@ h1 {
     border-color: #696969;
     border-width: 2px;
     align-items: stretch;
+    flex-wrap: wrap;
     width: 100%;
 }
 .callout{

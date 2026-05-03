@@ -40,7 +40,7 @@ function generateMockData() {
             id: i,
             temp: 20 + Math.sin(i / 20) * 4 + Math.random(),
             humidity: 55 + Math.cos(i / 15) * 8 + Math.random(),
-            timestamp: new Date(now - i * 5 * 60000).toISOString(),
+            timestamp: new Date(now - i * 30 * 60000).toISOString(),
             sensor_id: 1,
             sensor: "living room"
         });
@@ -152,7 +152,7 @@ async function loadData() {
         ...layout_base,
         xaxis: {
             ...layout_base.xaxis,
-            tickformat: '%H:%M',
+            tickformat: '%H:%M\n%d %b',
             hoverformat: '%d %b %H:%M'
         },
         yaxis: {...layout_base.yaxis, title: '°C'},
