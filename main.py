@@ -77,14 +77,15 @@ def get_record(temp: bool, high: bool, session: Session = Depends(get_session)):
         return {temp: result[0], "humidity": result[1], "date": result[2]}
     else:
         result = session.exec(text(
-                f"SELECT temp, humidity, timestamp FROM sensorreading "
-                f"WHERE humidity = (SELECT {func}(humidity) FROM sensorreading) "
-                f"ORDER BY timestamp DESC LIMIT 1")
+            f"SELECT temp, humidity, timestamp FROM sensorreading "
+            f"WHERE humidity = (SELECT {func}(humidity) FROM sensorreading) "
+            f"ORDER BY timestamp DESC LIMIT 1")
 
         ).first()
         if not result:
             return {}
         return {"temp": result[0], "humidity": result[1], "timestamp": result[2]}
+
 
 @app.post("/sensors", dependencies=[Depends(verify_key)])
 def create_sensor(sensor: Sensor, session: Session = Depends(get_session)):
@@ -93,15 +94,19 @@ def create_sensor(sensor: Sensor, session: Session = Depends(get_session)):
     session.refresh(sensor)
     return sensor
 
+
 @app.get("/records")
 def get_records(session: Session = Depends(get_session)):
-    highTemp = session.exec(text("SELECT temp, timestamp FROM sensorreading ORDER BY temp DESC LIMIT 1")).all()
+    highTemp = session.exec(text(
+        f"SELECT temp, humidity, timestamp FROM sensorreading ")
+    ).all()
     # lowTemp = session.exec(text("SELECT temp, timestamp FROM sensorreading ORDER BY temp ASC LIMIT 1")).all()
     #
     # highHumidity = session.exec(text("SELECT humidity, timestamp FROM sensorreading ORDER BY humidity DESC LIMIT 1")).all()
     # lowHumidity = session.exec(text("SELECT humidity, timestamp FROM sensorreading ORDER BY humidity ASC LIMIT 1")).all()
-    return highTemp
+    return {"1": "2"}
     return {"highTemp": highTemp, "lowTemp": lowTemp, "highHumidity": highHumidity, "lowHumidity": lowHumidity}
+
 
 @app.get("/sensors", dependencies=[Depends(verify_key)])
 def get_sensors(session: Session = Depends(get_session)):
