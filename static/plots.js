@@ -1,4 +1,4 @@
-const MOCK = true;
+const MOCK = false;
 
 const key = new URLSearchParams(window.location.search).get('key');
 
@@ -64,22 +64,22 @@ function setRecordValues(highestTemp, lowestTemp, highestHumidity, lowestHumidit
     document.getElementById('record-high-value').textContent =
         highestTemp?.value?.toFixed(1) + ' C' || 'N/A';
     document.getElementById('record-ht-date').textContent =
-        highestTemp?.timestamp ? parseUtcTimestamp(highestTemp.timestamp).toLocaleTimeString() : 'N/A';
+        highestTemp?.timestamp ? parseUtcTimestamp(highestTemp.timestamp).toLocaleString() : 'N/A';
 
     document.getElementById('record-low-value').textContent =
         lowestTemp?.value?.toFixed(1) + ' C' || 'N/A';
     document.getElementById('record-lt-date').textContent =
-        lowestTemp?.timestamp ? parseUtcTimestamp(lowestTemp.timestamp).toLocaleTimeString() : 'N/A';
+        lowestTemp?.timestamp ? parseUtcTimestamp(lowestTemp.timestamp).toLocaleString() : 'N/A';
 
     document.getElementById('record-high-h-value').textContent =
         highestHumidity?.value?.toFixed(1) + ' %' || 'N/A';
     document.getElementById('record-hh-date').textContent =
-        highestHumidity?.timestamp ? parseUtcTimestamp(highestHumidity.timestamp).toLocaleTimeString() : 'N/A';
+        highestHumidity?.timestamp ? parseUtcTimestamp(highestHumidity.timestamp).toLocaleString() : 'N/A';
 
     document.getElementById('record-low-h-value').textContent =
         lowestHumidity?.value?.toFixed(1) + ' %' || 'N/A';
     document.getElementById('record-lh-date').textContent =
-        lowestHumidity?.timestamp ? parseUtcTimestamp(lowestHumidity.timestamp).toLocaleTimeString() : 'N/A';
+        lowestHumidity?.timestamp ? parseUtcTimestamp(lowestHumidity.timestamp).toLocaleString() : 'N/A';
 }
 
 async function loadData() {
@@ -128,7 +128,7 @@ async function loadData() {
         groups[name].humids.push(d.humidity);
     });
 
-    const colors = ['#111111', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
+    const colors = ['#12c35a', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
     let ci = 0;
 
     const overviewTraces = [];
