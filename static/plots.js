@@ -1,4 +1,4 @@
-const MOCK = false;
+const MOCK = true;
 
 const key = new URLSearchParams(window.location.search).get('key');
 
@@ -48,8 +48,8 @@ function generateMockData() {
     return data;
 }
 
-async function getRecord(temp, high) {
-    const res = await fetch(`/data/record?temp=${temp}&high=${high}`, {
+async function getRecords() {
+    const res = await fetch(`/records`, {
         headers: {'X-API-Key': key}
     });
 
@@ -60,21 +60,26 @@ async function getRecord(temp, high) {
     return await res.json();
 }
 
-function getAllTimeRecords(highestTemp, lowestTemp, highestHumidity, lowestHumidity) {
+function setRecordValues(highestTemp, lowestTemp, highestHumidity, lowestHumidity) {
     document.getElementById('record-high-value').textContent =
-        highestTemp?.temp?.toFixed(1) + ' C' || 'N/A';
+        highestTemp?.value?.toFixed(1) + ' C' || 'N/A';
     document.getElementById('record-ht-date').textContent =
         highestTemp?.timestamp ? parseUtcTimestamp(highestTemp.timestamp).toLocaleTimeString() : 'N/A';
+
     document.getElementById('record-low-value').textContent =
-        lowestTemp?.temp?.toFixed(1) + ' C' || 'N/A';
+        lowestTemp?.value?.toFixed(1) + ' C' || 'N/A';
     document.getElementById('record-lt-date').textContent =
         lowestTemp?.timestamp ? parseUtcTimestamp(lowestTemp.timestamp).toLocaleTimeString() : 'N/A';
+
     document.getElementById('record-high-h-value').textContent =
-        highestHumidity?.humidity?.toFixed(1) + ' %' || 'N/A';
+        highestHumidity?.value?.toFixed(1) + ' %' || 'N/A';
     document.getElementById('record-hh-date').textContent =
         highestHumidity?.timestamp ? parseUtcTimestamp(highestHumidity.timestamp).toLocaleTimeString() : 'N/A';
+
     document.getElementById('record-low-h-value').textContent =
-        lowestHumidity?.humidity?.toFixed(1) + ' %' || 'N/A';
+        lowestHumidity?.value?.toFixed(1) + ' %' || 'N/A';
+    document.getElementById('record-lh-date').textContent =
+        lowestHumidity?.timestamp ? parseUtcTimestamp(lowestHumidity.timestamp).toLocaleTimeString() : 'N/A';
 }
 
 async function loadData() {
@@ -87,7 +92,6 @@ async function loadData() {
         data = await res.json();
 
     }
-
 
 
     const hours = parseInt(document.getElementById('range-filter').value);
@@ -162,6 +166,7 @@ async function loadData() {
     document.getElementById('status').textContent =
         `${filtered.length} readings · updated ${new Date().toLocaleTimeString()}`;
 
+    // Latest reading card filling
     document.getElementById('temp-value').textContent =
         filtered.at(filtered.length - 1)?.temp?.toFixed(1) + ' C' || 'N/A';
 
@@ -173,23 +178,14 @@ async function loadData() {
     document.getElementById('timestamp-value').textContent =
         formattedTime || 'N/A';
 
-    const [
-        highestTemp,
-        lowestTemp,
-        highestHumidity,
-        lowestHumidity
-    ] = await Promise.all([
-        getRecord(true, true),
-        getRecord(true, false),
-        getRecord(false, true),
-        getRecord(false, false),
-    ]);
-    console.log(highestTemp);
-    console.log(lowestTemp);
-    console.log(highestHumidity);
-    console.log(lowestHumidity);
+    const records = await getRecords();
+    setRecordValues(
+        records.find(r => r.type === 'high-temp')
+        , records.find(r => r.type === 'low-temp')
+        , records.find(r => r.type === 'high-humidity')
+        , records.find(r => r.type === 'low-humidity')
+    )
 
-    getAllTimeRecords(highestTemp, lowestTemp, highestHumidity, lowestHumidity);
 
 }
 
