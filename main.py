@@ -101,8 +101,8 @@ def get_records(session: Session = Depends(get_session)):
         f"SELECT temp, timestamp FROM sensorreading ORDER BY temp DESC LIMIT 1")
     ).first()
     low_temp_record = session.exec(text(
-        f"SELECT temp, timestamp FROM sensorreading ORDER BY temp ASC LIMIT 1"
-    ))
+        f"SELECT temp, timestamp FROM sensorreading ORDER BY temp ASC LIMIT 1")
+    ).first()
     high_humidity_record = session.exec(text(
         f"SELECT humidity, timestamp FROM sensorreading ORDER BY humidity DESC LIMIT 1")
     ).first()
@@ -110,9 +110,9 @@ def get_records(session: Session = Depends(get_session)):
         f"SELECT humidity, timestamp FROM sensorreading ORDER BY humidity ASC LIMIT 1")
     ).first()
 
-    return[
+    return [
         {
-            "value" : high_temp_record[0],
+            "value": high_temp_record[0],
             "timestamp": high_temp_record[1],
             "type": "high_temp"
         },
