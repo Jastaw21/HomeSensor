@@ -135,6 +135,7 @@ async function loadData() {
 
     for (const [name, g] of Object.entries(groups)) {
         const col = colors[ci++ % colors.length];
+        const col2 = colors[2];
 
         overviewTraces.push({
             x: g.times, y: g.temps, name: `${name} temp`,
@@ -143,7 +144,7 @@ async function loadData() {
         });
         overviewTraces.push({
             x: g.times, y: g.humids, name: `${name} humidity`,
-            mode: 'lines', line: {color: col, width: 2, dash: 'dot'},
+            mode: 'lines', line: {color: col2, width: 2, dash: 'dot'},
             yaxis: 'y2', hovertemplate: '%{y:.1f}%'
         });
     }
