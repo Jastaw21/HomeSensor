@@ -99,7 +99,7 @@ def create_sensor(sensor: Sensor, session: Session = Depends(get_session)):
 def get_records(session: Session = Depends(get_session)):
     highTemp = session.exec(text(
         f"SELECT temp, humidity, timestamp FROM sensorreading ORDER BY temp DESC LIMIT 10")
-    ).all()
+    ).first()
     # lowTemp = session.exec(text("SELECT temp, timestamp FROM sensorreading ORDER BY temp ASC LIMIT 1")).all()
     #
     # highHumidity = session.exec(text("SELECT humidity, timestamp FROM sensorreading ORDER BY humidity DESC LIMIT 1")).all()
