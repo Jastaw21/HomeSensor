@@ -97,15 +97,41 @@ def create_sensor(sensor: Sensor, session: Session = Depends(get_session)):
 
 @app.get("/records")
 def get_records(session: Session = Depends(get_session)):
-    highTemp = session.exec(text(
-        f"SELECT temp, humidity, timestamp FROM sensorreading ORDER BY temp DESC LIMIT 10")
+    high_temp_record = session.exec(text(
+        f"SELECT temp, timestamp FROM sensorreading ORDER BY temp DESC LIMIT 1")
     ).first()
-    # lowTemp = session.exec(text("SELECT temp, timestamp FROM sensorreading ORDER BY temp ASC LIMIT 1")).all()
-    #
-    # highHumidity = session.exec(text("SELECT humidity, timestamp FROM sensorreading ORDER BY humidity DESC LIMIT 1")).all()
-    # lowHumidity = session.exec(text("SELECT humidity, timestamp FROM sensorreading ORDER BY humidity ASC LIMIT 1")).all()
-    return highTemp
-    return {"highTemp": highTemp, "lowTemp": lowTemp, "highHumidity": highHumidity, "lowHumidity": lowHumidity}
+    low_temp_record = session.exec(text(
+        f"SELECT temp, timestamp FROM sensorreading ORDER BY temp ASC LIMIT 1"
+    ))
+    high_humidity_record = session.exec(text(
+        f"SELECT humidity, timestamp FROM sensorreading ORDER BY humidity DESC LIMIT 1")
+    ).first()
+    low_humidity_record = session.exec(text(
+        f"SELECT humidity, timestamp FROM sensorreading ORDER BY humidity ASC LIMIT 1")
+    ).first()
+
+    return[
+        {
+            "value" : high_temp_record[0],
+            "timestamp": high_temp_record[1],
+            "type": "high_temp"
+        },
+        {
+            "value": low_temp_record[0],
+            "timestamp": low_temp_record[1],
+            "type": "low_temp"
+        },
+        {
+            "value": high_humidity_record[0],
+            "timestamp": high_humidity_record[1],
+            "type": "high_humidity"
+        },
+        {
+            "value": low_humidity_record[0],
+            "timestamp": low_humidity_record[1],
+            "type": "low_humidity"
+        }
+    ]
 
 
 @app.get("/sensors", dependencies=[Depends(verify_key)])
