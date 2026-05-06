@@ -10,7 +10,7 @@ from sqlmodel import Session, select
 
 import archiving
 from database import init_db, get_session
-from models import SensorReading, Sensor
+from models import SensorReading, Sensor, HourlyReading
 
 app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -27,11 +27,13 @@ def verify_key(key: str = Depends(api_key_header)):
 scheduler = BackgroundScheduler()
 scheduler_started = False
 
+
 @app.post("/admin/test-archive")
 def test_archive():
     archiving.archive_hourly()
     archiving.archive_daily()
     return {"status": "ran"}
+
 
 @app.on_event("startup")
 def on_startup():
@@ -39,15 +41,16 @@ def on_startup():
     init_db()
 
     if not scheduler_started:
-
         scheduler.add_job(archiving.archive_hourly, "interval", minutes=60)
         scheduler.add_job(archiving.archive_daily, "interval", hours=24)
         scheduler.start()
         scheduler_started = True
 
+
 @app.on_event("shutdown")
 def shutdown_event():
     scheduler.shutdown()
+
 
 @app.get("/")
 def dashboard(request: Request):
@@ -63,6 +66,29 @@ def receive_data(reading: SensorReading, session: Session = Depends(get_session)
     session.commit()
     session.refresh(reading)
     return {"status": "ok", "id": reading.id}
+
+
+@app.get("/data/hourly")
+def get_hourly_readings(session: Session = Depends(get_session)):
+    row_number = int(14 * 24)
+    readings = session.exec(
+        select(HourlyReading)
+        .order_by(HourlyReading.timestamp.desc())
+        .limit(int(row_number))
+    ).all()
+    results = []
+    for r in readings:
+        results.append({
+            "id": r.id,
+            "avg_temp": r.avg_temp,
+            "min_temp": r.min_temp,
+            "max_temp": r.max_temp,
+            "avg_humidity": r.avg_humidity,
+            "min_humidity": r.min_humidity,
+            "max_humidity": r.max_humidity,
+        })
+
+    return results
 
 
 @app.get("/data", dependencies=[Depends(verify_key)])
