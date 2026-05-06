@@ -86,6 +86,7 @@ def get_hourly_readings(session: Session = Depends(get_session)):
             "humidity_avg": r.humidity_avg,
             "humidity_min": r.humidity_min,
             "humidity_max": r.humidity_max,
+            "sensor_id": r.sensor_id
         })
 
     return results
