@@ -15,21 +15,12 @@ def archive_hourly():
             AVG(humidity),MIN(humidity),MAX(humidity)
             
         FROM sensorreading
-        WHERE timestamp < datetime('now', '-1 day')
+        WHERE timestamp < strftime('%Y-%m-%d %H:00:00', 'now')
         GROUP BY hourly_ts
         ON CONFLICT(timestamp) DO NOTHING;
         """)
 
-        conn.execute("""
-        INSERT INTO hourly_log (
-            timestamp,
-            message
-        )
-        VALUES (
-            datetime('now', 'localtime'),
-            'Archived hourly data'
-        );
-        """)
+
 
         conn.commit()
 
