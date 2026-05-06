@@ -25,16 +25,23 @@ def verify_key(key: str = Depends(api_key_header)):
 
 
 scheduler = BackgroundScheduler()
-
+scheduler_started = False
 
 @app.on_event("startup")
 def on_startup():
+    global scheduler_started
     init_db()
 
-    scheduler.add_job(archiving.archive_hourly, "interval", minutes=60)
-    scheduler.add_job(archiving.archive_daily, "interval", hours=24)
-    scheduler.start()
+    if not scheduler_started:
 
+        scheduler.add_job(archiving.archive_hourly, "interval", minutes=60)
+        scheduler.add_job(archiving.archive_daily, "interval", hours=24)
+        scheduler.start()
+        scheduler_started = True
+
+@app.on_event("shutdown")
+def shutdown_event():
+    scheduler.shutdown()
 
 @app.get("/")
 def dashboard(request: Request):
