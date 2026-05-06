@@ -1,5 +1,6 @@
 import os
 
+from apscheduler.schedulers.background import BackgroundScheduler
 from fastapi import FastAPI, Depends, HTTPException, Request
 from fastapi.responses import FileResponse
 from fastapi.security import APIKeyHeader
@@ -7,6 +8,7 @@ from fastapi.staticfiles import StaticFiles
 from sqlalchemy import text
 from sqlmodel import Session, select
 
+import archiving
 from database import init_db, get_session
 from models import SensorReading, Sensor
 
@@ -22,9 +24,16 @@ def verify_key(key: str = Depends(api_key_header)):
         raise HTTPException(status_code=403, detail="Forbidden")
 
 
+scheduler = BackgroundScheduler()
+
+
 @app.on_event("startup")
 def on_startup():
     init_db()
+
+    scheduler.add_job(archiving.archive_hourly, "interval", minutes=60)
+    scheduler.add_job(archiving.archive_daily, "interval", hours=24)
+    scheduler.start()
 
 
 @app.get("/")
@@ -45,7 +54,13 @@ def receive_data(reading: SensorReading, session: Session = Depends(get_session)
 
 @app.get("/data", dependencies=[Depends(verify_key)])
 def get_readings(session: Session = Depends(get_session)):
-    readings = session.exec(select(SensorReading)).all()
+    # get the last 14 days of data
+    row_number = int(14 * 24 * (60 / 5))  # assuming 5 minute readings
+    readings = session.exec(
+        select(SensorReading)
+        .order_by(SensorReading.timestamp.desc())
+        .limit(int(row_number))
+    ).all()
     result = []
     for r in readings:
         sensor = session.get(Sensor, r.sensor_id) if r.sensor_id else None
