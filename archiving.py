@@ -7,17 +7,19 @@ def archive_hourly():
         INSERT INTO hourly_data (
         timestamp,
         temp_avg,temp_min,temp_max,
-        humidity_avg,humidity_min,humidity_max
+        humidity_avg,humidity_min,humidity_max,
+        sensor_id
         )
         SELECT
             strftime('%Y-%m-%d %H:00:00', timestamp) as hourly_ts,
             AVG(temp),MIN(temp),MAX(temp),
-            AVG(humidity),MIN(humidity),MAX(humidity)
+            AVG(humidity),MIN(humidity),MAX(humidity),
+            sensor_id
             
         FROM sensorreading
         WHERE timestamp < strftime('%Y-%m-%d %H:00:00', 'now')
-        GROUP BY hourly_ts
-        ON CONFLICT(timestamp) DO NOTHING;
+        GROUP BY hourly_ts, sensor_id
+        ON CONFLICT(timestamp, sensor_id) DO NOTHING;
         """)
 
 
@@ -31,14 +33,16 @@ def archive_daily():
         timestamp,
         temp_avg,temp_min,temp_max,
         humidity_avg,humidity_min,humidity_max
+        ,sensor_id
         )
         SELECT
             strftime('%Y-%m-%d 00:00:00', timestamp) as daily_ts,
             AVG(temp_avg),MIN(temp_min),MAX(temp_max),
-            AVG(humidity_avg),MIN(humidity_min),MAX(humidity_max)
+            AVG(humidity_avg),MIN(humidity_min),MAX(humidity_max),
+            sensor_id
         FROM hourly_data
         WHERE timestamp < datetime('now', '-2 day')
-        GROUP BY daily_ts
-        ON CONFLICT(timestamp) DO NOTHING;
+        GROUP BY daily_ts, sensor_id
+        ON CONFLICT(timestamp,sensor_id) DO NOTHING;
         """)
         conn.commit()
