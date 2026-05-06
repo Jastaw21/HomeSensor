@@ -18,8 +18,8 @@ class SensorReading(SQLModel, table=True):
 
 
 class HourlyReading(SQLModel, table=True):
-    id: Optional[int] = Field(default=None, primary_key=True)
-    timestamp: datetime = Field(default_factory=datetime.utcnow)
+    __tablename__ = "hourly_data"
+    timestamp: datetime = Field(default_factory=datetime.utcnow, primary_key=True)
     temp_avg: float
     temp_min: float
     temp_max: float
@@ -29,8 +29,9 @@ class HourlyReading(SQLModel, table=True):
 
 
 class DailyReading(SQLModel, table=True):
-    id: Optional[int] = Field(default=None, primary_key=True)
-    timestamp: datetime = Field(default_factory=datetime.utcnow)
+    __tablename__ = "daily_data"
+
+    timestamp: datetime = Field(default_factory=datetime.utcnow, primary_key=True)
     temp_avg: float
     temp_min: float
     temp_max: float

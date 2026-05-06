@@ -79,13 +79,13 @@ def get_hourly_readings(session: Session = Depends(get_session)):
     results = []
     for r in readings:
         results.append({
-            "id": r.id,
-            "avg_temp": r.avg_temp,
-            "min_temp": r.min_temp,
-            "max_temp": r.max_temp,
-            "avg_humidity": r.avg_humidity,
-            "min_humidity": r.min_humidity,
-            "max_humidity": r.max_humidity,
+            "timestamp": r.timestamp,
+            "temp_avg": r.temp_avg,
+            "temp_min": r.temp_min,
+            "temp_max": r.temp_max,
+            "humidity_avg": r.humidity_avg,
+            "humidity_min": r.humidity_min,
+            "humidity_max": r.humidity_max,
         })
 
     return results
