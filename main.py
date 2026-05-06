@@ -27,6 +27,12 @@ def verify_key(key: str = Depends(api_key_header)):
 scheduler = BackgroundScheduler()
 scheduler_started = False
 
+@app.post("/admin/test-archive")
+def test_archive():
+    archiving.archive_hourly()
+    archiving.archive_daily()
+    return {"status": "ran"}
+
 @app.on_event("startup")
 def on_startup():
     global scheduler_started
