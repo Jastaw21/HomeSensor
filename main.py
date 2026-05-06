@@ -10,7 +10,7 @@ from sqlmodel import Session, select
 
 import archiving
 from database import init_db, get_session
-from models import SensorReading, Sensor, HourlyReading
+from models import SensorReading, Sensor, HourlyReading, DailyReading
 
 app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -90,6 +90,27 @@ def get_hourly_readings(session: Session = Depends(get_session)):
 
     return results
 
+@app.get("/data/daily")
+def get_hourly_readings(session: Session = Depends(get_session)):
+    row_number = int(14)
+    readings = session.exec(
+        select(DailyReading)
+        .order_by(DailyReading.timestamp.desc())
+        .limit(int(row_number))
+    ).all()
+    results = []
+    for r in readings:
+        results.append({
+            "timestamp": r.timestamp,
+            "temp_avg": r.temp_avg,
+            "temp_min": r.temp_min,
+            "temp_max": r.temp_max,
+            "humidity_avg": r.humidity_avg,
+            "humidity_min": r.humidity_min,
+            "humidity_max": r.humidity_max,
+        })
+
+    return results
 
 @app.get("/data", dependencies=[Depends(verify_key)])
 def get_readings(session: Session = Depends(get_session)):
