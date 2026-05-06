@@ -6,7 +6,7 @@ def archive_hourly():
         conn.execute("""
         INSERT INTO hourly_data (
         timestamp,
-        COALESCE(sensor_id, 1) as sensor_id,
+        sensor_id,
         temp_avg,temp_min,temp_max,
         humidity_avg,humidity_min,humidity_max
         )
@@ -31,7 +31,7 @@ def archive_daily():
         conn.execute("""
         INSERT INTO daily_data (
         timestamp,
-        COALESCE(sensor_id, 1) as sensor_id,
+        sensor_id,
         temp_avg,temp_min,temp_max,
         humidity_avg,humidity_min,humidity_max
         )
