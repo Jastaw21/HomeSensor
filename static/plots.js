@@ -16,7 +16,7 @@ const layout_base = {
     font: {color: '#C4C4C4', size: 12, family: 'Roboto, sans-serif'},
     margin: {t: 10, r: 50, b: 50, l: 50},
     xaxis: {gridcolor: '#696969', linecolor: '#696969', type: 'date'},
-    yaxis: {gridcolor: '#696969', linecolor: '#696969', range: [15, 25]},
+    yaxis: {gridcolor: '#696969', linecolor: '#696969', range: [10, 35]},
     yaxis2: {gridcolor: 'transparent', linecolor: '#696969', range: [20, 100]},
     hovermode: 'x unified',
     legend: {
@@ -192,12 +192,12 @@ async function drawHourlyGraph(filtered) {
             avg_humids: []
         };
         groups[name].times.push(parseUtcTimestamp(d.timestamp));
-        groups[name].min_temps.push(d.temp);
-        groups[name].max_temps.push(d.temp);
-        groups[name].avg_temps.push(d.temp);
-        groups[name].min_humids.push(d.humidity);
-        groups[name].max_humids.push(d.humidity);
-        groups[name].avg_humids.push(d.humidity);
+        groups[name].min_temps.push(d.temp_min);
+        groups[name].max_temps.push(d.temp_max);
+        groups[name].avg_temps.push(d.temp_avg);
+        groups[name].min_humids.push(d.humidity_min);
+        groups[name].max_humids.push(d.humidity_max);
+        groups[name].avg_humids.push(d.humidity_avg);
     })
 
     const traces = [];
