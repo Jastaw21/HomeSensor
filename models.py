@@ -27,7 +27,7 @@ class HourlyReading(SQLModel, table=True):
     humidity_min: float
     humidity_max: float
 
-    sensor_id: int = Field(default=1)
+    sensor_id: int = Field(default=1, primary_key=True)
 
 
 class DailyReading(SQLModel, table=True):
@@ -41,7 +41,7 @@ class DailyReading(SQLModel, table=True):
     humidity_min: float
     humidity_max: float
 
-    sensor_id: int = Field(default=1)
+    sensor_id: int = Field(default=1, primary_key=True)
 
 
 class Log(SQLModel, table=True):
