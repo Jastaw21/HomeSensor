@@ -19,8 +19,19 @@ def archive_hourly():
         GROUP BY hourly_ts
         ON CONFLICT(timestamp) DO NOTHING;
         """)
-        conn.commit()
 
+        conn.execute("""
+        INSERT INTO hourly_log (
+            timestamp,
+            message
+        )
+        VALUES (
+            datetime('now', 'localtime'),
+            'Archived hourly data'
+        );
+        """)
+
+        conn.commit()
 
 def archive_daily():
     with sqlite3.connect("sensors.db") as conn:

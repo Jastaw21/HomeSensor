@@ -41,7 +41,7 @@ def on_startup():
     init_db()
 
     if not scheduler_started:
-        scheduler.add_job(archiving.archive_hourly, "interval", minutes=60)
+        scheduler.add_job(archiving.archive_hourly, "interval", minutes=3)
         scheduler.add_job(archiving.archive_daily, "interval", hours=24)
         scheduler.start()
         scheduler_started = True

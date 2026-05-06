@@ -38,3 +38,9 @@ class DailyReading(SQLModel, table=True):
     humidity_avg: float
     humidity_min: float
     humidity_max: float
+
+class Log(SQLModel, table=True):
+    __tablename__ = "hourly_log"
+    id: int | None = Field(default=None, primary_key=True)
+    timestamp: str
+    message: str
