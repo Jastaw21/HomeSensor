@@ -39,8 +39,8 @@ def archive_daily():
             strftime('%Y-%m-%d 00:00:00', timestamp) as daily_ts,
             COALESCE(sensor_id, 1) as sensor_id,
             AVG(temp_avg),MIN(temp_min),MAX(temp_max),
-            AVG(humidity_avg),MIN(humidity_min),MAX(humidity_max),
-            sensor_id
+            AVG(humidity_avg),MIN(humidity_min),MAX(humidity_max)
+            
         FROM hourly_data
         WHERE timestamp < datetime('now', '-2 day')
         GROUP BY daily_ts, COALESCE(sensor_id, 1)
