@@ -16,8 +16,8 @@ const layout_base = {
     font: {color: '#C4C4C4', size: 12, family: 'Roboto, sans-serif'},
     margin: {t: 10, r: 50, b: 50, l: 50},
     xaxis: {gridcolor: '#696969', linecolor: '#696969', type: 'date'},
-    yaxis: {gridcolor: '#696969', linecolor: '#696969', range: [10, 35]},
-    yaxis2: {gridcolor: 'transparent', linecolor: '#696969', range: [20, 100]},
+    yaxis: {gridcolor: '#696969', linecolor: '#696969'},
+    yaxis2: {gridcolor: 'transparent', linecolor: '#696969'},
     hovermode: 'x unified',
     legend: {
         orientation: 'h',
@@ -215,7 +215,7 @@ async function drawHourlyGraph(filtered) {
         })
         // low temp
         traces.push({
-            x: g.times, y: g.max_temps, name: `${name} low temp`,
+            x: g.times, y: g.min_temps, name: `${name} low temp`,
             mode: 'lines', line: {color: minTempColour, width: 2},
         })
 
