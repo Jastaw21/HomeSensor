@@ -82,7 +82,7 @@ function setRecordValues(highestTemp, lowestTemp, highestHumidity, lowestHumidit
         lowestHumidity?.timestamp ? parseUtcTimestamp(lowestHumidity.timestamp).toLocaleString() : 'N/A';
 }
 
-async function loadData() {
+async function fetchData() {
     let data;
     if (MOCK) {
         data = generateMockData();
@@ -90,9 +90,7 @@ async function loadData() {
         document.getElementById('status').textContent = 'Loading...';
         const res = await fetch('/data', {headers: {'X-API-Key': key}});
         data = await res.json();
-
     }
-
 
     const hours = parseInt(document.getElementById('range-filter').value);
     if (hours > 0) {
@@ -117,6 +115,29 @@ async function loadData() {
 
     const filtered = sensorFilter === 'all' ? data
         : data.filter(d => (d.sensor || `Sensor ${d.sensor_id}`) === sensorFilter);
+
+    return filtered;
+}
+
+function updateLatestReadings(data) {
+    if (!data || data.length === 0) return;
+
+    document.getElementById('status').textContent =
+        `${data.length} readings · updated ${new Date().toLocaleTimeString()}`;
+
+    const latest = data.at(-1);
+    document.getElementById('temp-value').textContent =
+        latest.temp?.toFixed(1) + ' C' || 'N/A';
+    document.getElementById('humidity-value').textContent =
+        latest.humidity?.toFixed(1) + ' %' || 'N/A';
+
+    const rawTime = latest.timestamp;
+    const formattedTime = rawTime ? parseUtcTimestamp(rawTime).toLocaleTimeString() : 'N/A';
+    document.getElementById('timestamp-value').textContent =
+        formattedTime || 'N/A';
+}
+
+async function drawDailyGraph(filtered) {
 
     // Group by sensor
     const groups = {};
@@ -162,22 +183,14 @@ async function loadData() {
 
     Plotly.purge('chart-overview');
     Plotly.newPlot('chart-overview', overviewTraces, overviewLayout, config);
+}
 
 
-    document.getElementById('status').textContent =
-        `${filtered.length} readings · updated ${new Date().toLocaleTimeString()}`;
+async function runPage() {
+    const data = await fetchData();
 
-    // Latest reading card filling
-    document.getElementById('temp-value').textContent =
-        filtered.at(filtered.length - 1)?.temp?.toFixed(1) + ' C' || 'N/A';
-
-    document.getElementById('humidity-value').textContent =
-        filtered.at(filtered.length - 1)?.humidity?.toFixed(1) + ' %' || 'N/A';
-
-    const rawTime = filtered.at(filtered.length - 1)?.timestamp;
-    const formattedTime = rawTime ? parseUtcTimestamp(rawTime).toLocaleTimeString() : 'N/A';
-    document.getElementById('timestamp-value').textContent =
-        formattedTime || 'N/A';
+    await drawDailyGraph(data);
+    updateLatestReadings(data);
 
     const records = await getRecords();
     setRecordValues(
@@ -190,8 +203,8 @@ async function loadData() {
 
 }
 
-document.getElementById('range-filter').addEventListener('change', loadData);
-document.getElementById('sensor-filter').addEventListener('change', loadData);
+document.getElementById('range-filter').addEventListener('change', runPage);
+document.getElementById('sensor-filter').addEventListener('change', runPage);
 
-loadData();
-setInterval(loadData, 60000 * 5); // auto-refresh every 5 minutes
+runPage();
+setInterval(runPage, 60000 * 5); // auto-refresh every 5 minutes
