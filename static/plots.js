@@ -1,4 +1,4 @@
-const MOCK = true;
+const MOCK = false;
 
 const key = new URLSearchParams(window.location.search).get('key');
 
@@ -111,6 +111,7 @@ async function fetchHourlyData() {
         document.getElementById('status').textContent = 'Loading...';
         const res = await fetch('/data/hourly', {headers: {'X-API-Key': key}});
         data = await res.json();
+        console.log(data);
     }
     return data;
 }
