@@ -32,7 +32,7 @@ const layout_base = {
 };
 const config = {responsive: true, displayModeBar: false};
 
-function generateMockRegularData() {
+function generateMockHighResData() {
     const now = Date.now();
     const data = [];
     for (let i = 200; i >= 0; i--) {
@@ -69,7 +69,28 @@ function generateMockHourlyData() {
     return data;
 }
 
-async function getRecords() {
+function generateMockDailyData() {
+    const now = Date.now();
+    const data = [];
+    for (let i = 24; i >= 0; i--) {
+        data.push({
+            id: i,
+            temp_avg: 20 + Math.sin(i / 20) * 4 + Math.random(),
+            temp_max: 26 + Math.sin(i / 20) * 4 + Math.random(),
+            temp_min: 16 + Math.sin(i / 20) * 4 + Math.random(),
+            humidity_avg: 55 + Math.cos(i / 15) * 8 + Math.random(),
+            humidity_max: 65 + Math.cos(i / 15) * 8 + Math.random(),
+            humidity_min: 45 + Math.cos(i / 15) * 8 + Math.random(),
+            timestamp: new Date(now - i * (3600000 * 24)).toISOString(),
+            sensor_id: 1,
+            sensor: "living room"
+        })
+    }
+
+    return data;
+}
+
+async function fetchRecordData() {
     const res = await fetch(`/records`, {
         headers: {'X-API-Key': key}
     });
@@ -81,28 +102,6 @@ async function getRecords() {
     return await res.json();
 }
 
-function setRecordValues(highestTemp, lowestTemp, highestHumidity, lowestHumidity) {
-    document.getElementById('record-high-value').textContent =
-        highestTemp?.value?.toFixed(1) + ' C' || 'N/A';
-    document.getElementById('record-ht-date').textContent =
-        highestTemp?.timestamp ? parseUtcTimestamp(highestTemp.timestamp).toLocaleString() : 'N/A';
-
-    document.getElementById('record-low-value').textContent =
-        lowestTemp?.value?.toFixed(1) + ' C' || 'N/A';
-    document.getElementById('record-lt-date').textContent =
-        lowestTemp?.timestamp ? parseUtcTimestamp(lowestTemp.timestamp).toLocaleString() : 'N/A';
-
-    document.getElementById('record-high-h-value').textContent =
-        highestHumidity?.value?.toFixed(1) + ' %' || 'N/A';
-    document.getElementById('record-hh-date').textContent =
-        highestHumidity?.timestamp ? parseUtcTimestamp(highestHumidity.timestamp).toLocaleString() : 'N/A';
-
-    document.getElementById('record-low-h-value').textContent =
-        lowestHumidity?.value?.toFixed(1) + ' %' || 'N/A';
-    document.getElementById('record-lh-date').textContent =
-        lowestHumidity?.timestamp ? parseUtcTimestamp(lowestHumidity.timestamp).toLocaleString() : 'N/A';
-}
-
 async function fetchHourlyData() {
     let data;
     if (MOCK) {
@@ -111,15 +110,26 @@ async function fetchHourlyData() {
         document.getElementById('status').textContent = 'Loading...';
         const res = await fetch('/data/hourly', {headers: {'X-API-Key': key}});
         data = await res.json();
-        console.log(data);
     }
     return data;
 }
 
-async function fetchRegularData() {
+async function fetchDailyData() {
     let data;
     if (MOCK) {
-        data = generateMockRegularData();
+        data = generateMockDailyData();
+    } else {
+        document.getElementById('status').textContent = 'Loading...';
+        const res = await fetch('/data/daily', {headers: {'X-API-Key': key}});
+        data = await res.json();        
+    }
+    return data;
+}
+
+async function fetchHighResData() {
+    let data;
+    if (MOCK) {
+        data = generateMockHighResData();
     } else {
         document.getElementById('status').textContent = 'Loading...';
         const res = await fetch('/data', {headers: {'X-API-Key': key}});
@@ -169,6 +179,28 @@ function updateLatestReadings(data) {
     const formattedTime = rawTime ? parseUtcTimestamp(rawTime).toLocaleTimeString() : 'N/A';
     document.getElementById('timestamp-value').textContent =
         formattedTime || 'N/A';
+}
+
+function updateRecordsCards(highestTemp, lowestTemp, highestHumidity, lowestHumidity) {
+    document.getElementById('record-high-value').textContent =
+        highestTemp?.value?.toFixed(1) + ' C' || 'N/A';
+    document.getElementById('record-ht-date').textContent =
+        highestTemp?.timestamp ? parseUtcTimestamp(highestTemp.timestamp).toLocaleString() : 'N/A';
+
+    document.getElementById('record-low-value').textContent =
+        lowestTemp?.value?.toFixed(1) + ' C' || 'N/A';
+    document.getElementById('record-lt-date').textContent =
+        lowestTemp?.timestamp ? parseUtcTimestamp(lowestTemp.timestamp).toLocaleString() : 'N/A';
+
+    document.getElementById('record-high-h-value').textContent =
+        highestHumidity?.value?.toFixed(1) + ' %' || 'N/A';
+    document.getElementById('record-hh-date').textContent =
+        highestHumidity?.timestamp ? parseUtcTimestamp(highestHumidity.timestamp).toLocaleString() : 'N/A';
+
+    document.getElementById('record-low-h-value').textContent =
+        lowestHumidity?.value?.toFixed(1) + ' %' || 'N/A';
+    document.getElementById('record-lh-date').textContent =
+        lowestHumidity?.timestamp ? parseUtcTimestamp(lowestHumidity.timestamp).toLocaleString() : 'N/A';
 }
 
 async function drawHourlyGraph(filtered) {
@@ -224,12 +256,8 @@ async function drawHourlyGraph(filtered) {
         traces.push({
             x: g.times, y: g.avg_temps, name: `${name} avg temp`,
             mode: 'lines', line: {color: avgTempColour, width: 2},
-        });
-       
-        
-
-
-
+        });    
+    
 
     }
     const layout = {
@@ -246,7 +274,79 @@ async function drawHourlyGraph(filtered) {
     Plotly.newPlot('hourly-graph', traces, layout, config)
 }
 
+
 async function drawDailyGraph(filtered) {
+    const maxTempColour = '#12c35a';
+    const minTempColour = '#A86093';
+    const avgTempColour = '#4A6DCE';
+    const maxHumidityColour = '#6f00b1';
+    const minHumidityColour = '#4b7dff';
+    const avgHumidityColour = '#a6c0ff';
+
+    const groups = {};
+    filtered.forEach(d => {
+        const name = d.sensor || 'Sensor ' + d.sensor_id;
+        if (!groups[name]) groups[name] = {
+            times: [],
+            min_temps: [],
+            max_temps: [],
+            avg_temps: [],
+            min_humids: [],
+            max_humids: [],
+            avg_humids: []
+        };
+        groups[name].times.push(parseUtcTimestamp(d.timestamp));
+        groups[name].min_temps.push(d.temp_min);
+        groups[name].max_temps.push(d.temp_max);
+        groups[name].avg_temps.push(d.temp_avg);
+        groups[name].min_humids.push(d.humidity_min);
+        groups[name].max_humids.push(d.humidity_max);
+        groups[name].avg_humids.push(d.humidity_avg);
+    })
+
+    const traces = [];
+
+    for (const [name, g] of Object.entries(groups)) {
+        // low temp
+        traces.push({
+            x: g.times, y: g.min_temps, name: `${name} min C`,
+            mode: 'lines', line: {color: minTempColour, width: 0},
+            showlegend: false,
+            hoverinfo: 'skip'
+        });
+         // high temp
+        const transparent_colour = 'rgba(18,195,90,0.15)';
+        traces.push({
+            x: g.times, y: g.max_temps, name: `${name} max C`,
+            mode: 'lines', line: {color: maxTempColour, width: 0},
+            fill: 'tonexty',
+            fillcolor: transparent_colour,
+            showlegend: false,
+            hoverinfo: 'skip'
+        });
+        // avg temp
+        traces.push({
+            x: g.times, y: g.avg_temps, name: `${name} avg temp`,
+            mode: 'lines', line: {color: avgTempColour, width: 2},
+        });    
+    
+
+    }
+    const layout = {
+        ...layout_base,
+        xaxis:
+            {
+                ...layout_base.xaxis,
+                tickformat: '%H:%M\n%d %b',
+                hoverformat: '%d %b %H:%M'
+            },
+        yaxis: {...layout_base.yaxis, title: '°C'},
+    }
+    Plotly.purge('daily-graph');
+    Plotly.newPlot('daily-graph', traces, layout, config)
+}
+
+async function drawHighResGraph(filtered) {
 
     // Group by sensor
     const groups = {};
@@ -296,8 +396,8 @@ async function drawDailyGraph(filtered) {
 
 
 async function updateRecords() {
-    const records = await getRecords();
-    setRecordValues(
+    const records = await fetchRecordData();
+    updateRecordsCards(
         records.find(r => r.type === 'high_temp')
         , records.find(r => r.type === 'low_temp')
         , records.find(r => r.type === 'high_humidity')
@@ -308,12 +408,14 @@ async function updateRecords() {
 async function runPage() {
 
     // get all data
-    const data = await fetchRegularData();
+    const data = await fetchHighResData();
     const hourlyData = await fetchHourlyData();
+    const dailyData = await fetchDailyData();
 
     // draw the top frame, the graph with 5 minute-ly data
-    await drawDailyGraph(data);
+    await drawHighResGraph(data);
     await drawHourlyGraph(hourlyData);
+    await drawDailyGraph(dailyData);
 
     // top readings
     updateLatestReadings(data);
