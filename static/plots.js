@@ -16,7 +16,7 @@ const layout_base = {
     font: {color: '#C4C4C4', size: 12, family: 'Roboto, sans-serif'},
     margin: {t: 10, r: 50, b: 50, l: 50},
     xaxis: {gridcolor: '#696969', linecolor: '#696969', type: 'date'},
-    yaxis: {gridcolor: '#696969', linecolor: '#696969', range: [15,30]},
+    yaxis: {gridcolor: '#696969', linecolor: '#696969', range: [15,25]},
     yaxis2: {gridcolor: 'transparent', linecolor: '#696969', range: [20,90]},
     hovermode: 'x unified',
     legend: {
@@ -172,9 +172,9 @@ function updateLatestReadings(data) {
 }
 
 async function drawHourlyGraph(filtered) {
-    const maxTempColour = '#b29600';
-    const minTempColour = '#2c7400';
-    const avgTempColour = '#87ffd3';
+    const maxTempColour = '#12c35a';
+    const minTempColour = '#A86093';
+    const avgTempColour = '#4A6DCE';
     const maxHumidityColour = '#6f00b1';
     const minHumidityColour = '#4b7dff';
     const avgHumidityColour = '#a6c0ff';
@@ -203,21 +203,30 @@ async function drawHourlyGraph(filtered) {
     const traces = [];
 
     for (const [name, g] of Object.entries(groups)) {
+        // low temp
+        traces.push({
+            x: g.times, y: g.min_temps, name: `${name} min C`,
+            mode: 'lines', line: {color: minTempColour, width: 0},
+            showlegend: false,
+            hoverinfo: 'skip'
+        });
+         // high temp
+        const transparent_colour = 'rgba(18,195,90,0.15)';
+        traces.push({
+            x: g.times, y: g.max_temps, name: `${name} max C`,
+            mode: 'lines', line: {color: maxTempColour, width: 0},
+            fill: 'tonexty',
+            fillcolor: transparent_colour,
+            showlegend: false,
+            hoverinfo: 'skip'
+        });
         // avg temp
         traces.push({
             x: g.times, y: g.avg_temps, name: `${name} avg temp`,
             mode: 'lines', line: {color: avgTempColour, width: 2},
-        })
-        // high temp
-        traces.push({
-            x: g.times, y: g.max_temps, name: `${name} high temp`,
-            mode: 'lines', line: {color: maxTempColour, width: 2},
-        })
-        // low temp
-        traces.push({
-            x: g.times, y: g.min_temps, name: `${name} low temp`,
-            mode: 'lines', line: {color: minTempColour, width: 2},
-        })
+        });
+       
+        
 
 
 
