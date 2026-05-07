@@ -91,6 +91,7 @@ def get_hourly_readings(session: Session = Depends(get_session)):
 
     return results
 
+
 @app.get("/data/daily")
 def get_hourly_readings(session: Session = Depends(get_session)):
     row_number = int(14)
@@ -113,7 +114,8 @@ def get_hourly_readings(session: Session = Depends(get_session)):
 
     return results
 
-@app.get("/data", dependencies=[Depends(verify_key)])
+
+@app.get("/data/granular")
 def get_readings(session: Session = Depends(get_session)):
     # get the last 14 days of data
     row_number = int(14 * 24 * (60 / 5))  # assuming 5 minute readings

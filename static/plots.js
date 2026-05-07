@@ -1,4 +1,4 @@
-const MOCK = false;
+const MOCK = true;
 
 const key = new URLSearchParams(window.location.search).get('key');
 
@@ -121,7 +121,7 @@ async function fetchDailyData() {
     } else {
         document.getElementById('status').textContent = 'Loading...';
         const res = await fetch('/data/daily', {headers: {'X-API-Key': key}});
-        data = await res.json();        
+        data = await res.json();
     }
     return data;
 }
@@ -132,7 +132,7 @@ async function fetchHighResData() {
         data = generateMockHighResData();
     } else {
         document.getElementById('status').textContent = 'Loading...';
-        const res = await fetch('/data', {headers: {'X-API-Key': key}});
+        const res = await fetch('/data/granular', {headers: {'X-API-Key': key}});
         data = await res.json();
     }
 
@@ -256,8 +256,8 @@ async function drawHourlyGraph(filtered) {
         traces.push({
             x: g.times, y: g.avg_temps, name: `${name} avg temp`,
             mode: 'lines', line: {color: avgTempColour, width: 2},
-        });    
-    
+        });
+
 
     }
     const layout = {
@@ -328,8 +328,8 @@ async function drawDailyGraph(filtered) {
         traces.push({
             x: g.times, y: g.avg_temps, name: `${name} avg temp`,
             mode: 'lines', line: {color: avgTempColour, width: 2},
-        });    
-    
+        });
+
 
     }
     const layout = {
@@ -414,7 +414,7 @@ async function runPage() {
 
     // draw the top frame, the graph with 5 minute-ly data
     await drawHighResGraph(data);
-    await drawHourlyGraph(hourlyData);
+    //await drawHourlyGraph(hourlyData);
     await drawDailyGraph(dailyData);
 
     // top readings

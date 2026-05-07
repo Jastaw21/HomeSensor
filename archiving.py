@@ -22,9 +22,8 @@ def archive_hourly():
         ON CONFLICT(timestamp, sensor_id) DO NOTHING;
         """)
 
-
-
         conn.commit()
+
 
 def archive_daily():
     with sqlite3.connect("sensors.db") as conn:
