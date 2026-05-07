@@ -16,8 +16,8 @@ const layout_base = {
     font: {color: '#C4C4C4', size: 12, family: 'Roboto, sans-serif'},
     margin: {t: 10, r: 50, b: 50, l: 50},
     xaxis: {gridcolor: '#696969', linecolor: '#696969', type: 'date'},
-    yaxis: {gridcolor: '#696969', linecolor: '#696969'},
-    yaxis2: {gridcolor: 'transparent', linecolor: '#696969'},
+    yaxis: {gridcolor: '#696969', linecolor: '#696969', range: [15,30]},
+    yaxis2: {gridcolor: 'transparent', linecolor: '#696969', range: [20,90]},
     hovermode: 'x unified',
     legend: {
         orientation: 'h',
