@@ -1,4 +1,4 @@
-const MOCK = true;
+const MOCK = false;
 
 const key = new URLSearchParams(window.location.search).get('key');
 
@@ -174,9 +174,6 @@ async function drawDailyGraph(filtered) {
     const maxTempColour = '#12c35a';
     const minTempColour = '#A86093';
     const avgTempColour = '#4A6DCE';
-    const maxHumidityColour = '#6f00b1';
-    const minHumidityColour = '#4b7dff';
-    const avgHumidityColour = '#a6c0ff';
 
     const groups = {};
     filtered.forEach(d => {
@@ -199,9 +196,22 @@ async function drawDailyGraph(filtered) {
         groups[name].avg_humids.push(d.humidity_avg);
     })
 
+
+    let minTemp = 40.0;
+    let maxTemp = 0.0;
+    let minHumidity = 101.0;
+    let maxHumidity = 0.0;
+
     const traces = [];
 
     for (const [name, g] of Object.entries(groups)) {
+
+        minTemp = Math.min(minTemp, Math.min(...g.min_temps));
+        maxTemp = Math.max(maxTemp, Math.max(...g.max_temps));
+        minHumidity = Math.min(minHumidity, Math.min(...g.min_humids));
+        maxHumidity = Math.max(maxHumidity, Math.max(...g.max_humids));
+
+
         // low temp
         traces.push({
             x: g.times, y: g.min_temps, name: `${name} min C`,
@@ -209,7 +219,7 @@ async function drawDailyGraph(filtered) {
             showlegend: false,
             hoverinfo: 'skip'
         });
-         // high temp
+        // high temp
         const transparent_colour = 'rgba(18,195,90,0.15)';
         traces.push({
             x: g.times, y: g.max_temps, name: `${name} max C`,
@@ -227,6 +237,14 @@ async function drawDailyGraph(filtered) {
 
 
     }
+
+    let {
+        tempMinAxis,
+        tempMaxAxis,
+        humidityMinAxis,
+        humidityMaxAxis
+    } = generateAxisLimits(maxTemp, minTemp, maxHumidity, minHumidity);
+
     const layout = {
         ...layout_base,
         xaxis:
@@ -235,10 +253,25 @@ async function drawDailyGraph(filtered) {
                 tickformat: '%H:%M\n%d %b',
                 hoverformat: '%d %b %H:%M'
             },
-        yaxis: {...layout_base.yaxis, title: '°C'},
+        yaxis: {...layout_base.yaxis, title: '°C', range:[tempMinAxis, tempMaxAxis]},
     }
     Plotly.purge('daily-graph');
     Plotly.newPlot('daily-graph', traces, layout, config)
+}
+
+function generateAxisLimits(maxTemp, minTemp, maxHumidity, minHumidity) {
+    let tempRange = maxTemp - minTemp;
+    let humidityRange = maxHumidity - minHumidity;
+
+    if (tempRange < 10) tempRange = 10; // clamp to 10 deg
+    if (humidityRange < 30) humidityRange = 30;
+
+    let tempMinAxis = minTemp - tempRange * 0.15;
+    let tempMaxAxis = maxTemp + tempRange * 0.15;
+
+    let humidityMinAxis = minHumidity - humidityRange * 0.15;
+    let humidityMaxAxis = maxHumidity + humidityRange * 0.15;
+    return {tempMinAxis, tempMaxAxis, humidityMinAxis, humidityMaxAxis};
 }
 
 async function drawHighResGraph(filtered) {
@@ -258,9 +291,19 @@ async function drawHighResGraph(filtered) {
 
     const traces = [];
 
+    let minTemp = 40.0;
+    let maxTemp = 0.0;
+    let minHumidity = 101.0;
+    let maxHumidity = 0.0;
+
     for (const [name, g] of Object.entries(groups)) {
         const col = colors[ci++ % colors.length];
         const col2 = colors[2];
+
+        minTemp = Math.min(minTemp, Math.min(...g.temps));
+        maxTemp = Math.max(maxTemp, Math.max(...g.temps));
+        minHumidity = Math.min(minHumidity, Math.min(...g.humids));
+        maxHumidity = Math.max(maxHumidity, Math.max(...g.humids));
 
         traces.push({
             x: g.times, y: g.temps, name: `${name} temp`,
@@ -274,6 +317,13 @@ async function drawHighResGraph(filtered) {
         });
     }
 
+    let {
+        tempMinAxis,
+        tempMaxAxis,
+        humidityMinAxis,
+        humidityMaxAxis
+    } = generateAxisLimits(maxTemp, minTemp, maxHumidity, minHumidity);
+
     const layout = {
         ...layout_base,
         xaxis: {
@@ -281,8 +331,8 @@ async function drawHighResGraph(filtered) {
             tickformat: '%H:%M\n%d %b',
             hoverformat: '%d %b %H:%M'
         },
-        yaxis: {...layout_base.yaxis, title: '°C'},
-        yaxis2: {...layout_base.yaxis2, title: '%', overlaying: 'y', side: 'right'},
+        yaxis: {...layout_base.yaxis, title: '°C', range:[tempMinAxis, tempMaxAxis]},
+        yaxis2: {...layout_base.yaxis2, title: '%', overlaying: 'y', side: 'right', range:[humidityMinAxis, humidityMaxAxis]},
     };
 
     Plotly.purge('chart-overview');
@@ -304,12 +354,10 @@ async function runPage() {
 
     // get all data
     const data = await fetchHighResData();
-    const hourlyData = await fetchHourlyData();
     const dailyData = await fetchDailyData();
 
     // draw the top frame, the graph with 5 minute-ly data
     await drawHighResGraph(data);
-    //await drawHourlyGraph(hourlyData);
     await drawDailyGraph(dailyData);
 
     // top readings
