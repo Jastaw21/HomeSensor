@@ -51,11 +51,11 @@ const layout_base = {
     paper_bgcolor: 'transparent',
     plot_bgcolor: 'transparent',
     autosize: true,
-    font: {color: '#C4C4C4', size: 12, family: 'Roboto, sans-serif'},
+    font: {color: '#8BA99A', size: 12, family: 'Roboto, sans-serif'},
     margin: {t: 10, r: 50, b: 50, l: 50},
-    xaxis: {gridcolor: '#696969', linecolor: '#696969', type: 'date'},
-    yaxis: {gridcolor: '#696969', linecolor: '#696969', range: [15, 25]},
-    yaxis2: {gridcolor: 'transparent', linecolor: '#696969', range: [20, 90]},
+    xaxis: {gridcolor: '#1F4A4A', linecolor: '#1F4A4A', type: 'date'},
+    yaxis: {gridcolor: '#1F4A4A', linecolor: '#1F4A4A', range: [15, 25]},
+    yaxis2: {gridcolor: 'transparent', linecolor: '#1F4A4A', range: [20, 90]},
     hovermode: 'x unified',
     legend: {
         orientation: 'h',
@@ -63,7 +63,7 @@ const layout_base = {
         xanchor: 'center',
         y: -0.2,
         yanchor: 'top',
-        bgcolor: '#222', font: {color: '#A1A1A1'}
+        bgcolor: '#06110B', font: {color:' #8BA99A'}
     },
     showlegend: true,
     dragmode: false,
@@ -81,7 +81,6 @@ async function fetchRecordData() {
 
     return await res.json();
 }
-
 
 async function fetchDailyData() {
     let data;
@@ -136,7 +135,7 @@ function updateLatestReadings(data) {
     document.getElementById('status').textContent =
         `${data.length} readings · updated ${new Date().toLocaleTimeString()}`;
 
-    const latest = data.at(-1);
+    const latest = data.at(0); // data is ordered by timestamp desc
     document.getElementById('temp-value').textContent =
         latest.temp?.toFixed(1) + ' C' || 'N/A';
     document.getElementById('humidity-value').textContent =
@@ -171,9 +170,8 @@ function updateRecordsCards(highestTemp, lowestTemp, highestHumidity, lowestHumi
 }
 
 async function drawDailyGraph(filtered) {
-    const maxTempColour = '#12c35a';
-    const minTempColour = '#A86093';
-    const avgTempColour = '#4A6DCE';
+
+    const avgTempColour = '#12c35a';
 
     const groups = {};
     filtered.forEach(d => {
@@ -215,15 +213,15 @@ async function drawDailyGraph(filtered) {
         // low temp
         traces.push({
             x: g.times, y: g.min_temps, name: `${name} min C`,
-            mode: 'lines', line: {color: minTempColour, width: 0},
+            mode: 'lines', line: {color: '#000', width: 0},
             showlegend: false,
             hoverinfo: 'skip'
         });
         // high temp
-        const transparent_colour = 'rgba(18,195,90,0.15)';
+        const transparent_colour = 'rgba(18, 195, 90, 0.16)';
         traces.push({
             x: g.times, y: g.max_temps, name: `${name} max C`,
-            mode: 'lines', line: {color: maxTempColour, width: 0},
+            mode: 'lines', line: {color: '#000', width: 0},
             fill: 'tonexty',
             fillcolor: transparent_colour,
             showlegend: false,
@@ -240,9 +238,7 @@ async function drawDailyGraph(filtered) {
 
     let {
         tempMinAxis,
-        tempMaxAxis,
-        humidityMinAxis,
-        humidityMaxAxis
+        tempMaxAxis
     } = generateAxisLimits(maxTemp, minTemp, maxHumidity, minHumidity);
 
     const layout = {
@@ -286,7 +282,7 @@ async function drawHighResGraph(filtered) {
         groups[name].humids.push(d.humidity);
     });
 
-    const colors = ['#12c35a', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
+    const colors = ['#12c35a', '#10b981', '#38BDF8', '#ef4444', '#8b5cf6'];
     let ci = 0;
 
     const traces = [];

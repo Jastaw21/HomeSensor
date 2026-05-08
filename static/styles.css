@@ -6,8 +6,8 @@
 
 body {
     font-family: arial, serif;
-    background: #1F1F1F;
-    color: #E8E8E8;
+    background: #06110B;
+    color: #EAFBF0;
     padding: 24px;
 }
 
@@ -19,17 +19,17 @@ h1 {
 
 .subtitle {
     font-size: 13px;
-    color: #575757;
+    color: #8BA99A;
     margin-bottom: 24px;
 }
 
 .card {
 
-    background: #1F1F1F;
+    background: #0B1F15;
     border-radius: 6px;
     padding: 6px;
     margin-bottom: 6px;
-    border-color: #696969;
+    border-color: #1E3A2B;
     border-width: 2px;
     border-style: solid;
 }
@@ -38,7 +38,7 @@ h1 {
     font-size: 18px;
     font-weight: 600;
     margin-bottom: 6px;
-    color: #DBDBDB;
+    color: #8BA99A;
     align-self: center;
 }
 
@@ -61,7 +61,7 @@ h1 {
     width: 100%;
 }
 .callout{
-    background: #1F1F1F;
+    background: #102A1C;
     border-radius: 6px;
     padding: 6px;
     margin-bottom: 6px;
@@ -70,10 +70,11 @@ h1 {
     border-style: solid;
     text-align: center;
     flex: 1;
+    color: #8BA99A;
 }
 
 select, button {
-    background: #12c35a;
+    background: #102A1C;
     color: #F3FFF2;
     border: 1px solid #111111;
     border-radius: 8px;
@@ -83,13 +84,13 @@ select, button {
 }
 
 button:hover {
-    background: #befcc8;
-    color: #383838
+    background: #163824;
+    color: #EAFBF0
 }
 
 select:hover {
-    background: #befcc8;
-    color: #383838
+    background: #163824;
+    color: #EAFBF0
 }
 
 #status {
