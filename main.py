@@ -41,6 +41,8 @@ def on_startup():
     init_db()
 
     if not scheduler_started:
+        archiving.archive_hourly()
+        archiving.archive_daily()
         scheduler.add_job(archiving.archive_hourly, "interval", minutes=60)
         scheduler.add_job(archiving.archive_daily, "interval", hours=24)
         scheduler.start()
@@ -113,6 +115,12 @@ def get_hourly_readings(session: Session = Depends(get_session)):
         })
 
     return results
+
+
+@app.get("/debug/jobs")
+def get_jobs():
+    jobs = scheduler.get_jobs()
+    return [{"id": j.id, "next_run": str(j.next_run_time)} for j in jobs]
 
 
 @app.get("/data/granular")
