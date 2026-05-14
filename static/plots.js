@@ -306,9 +306,8 @@ async function drawDailyGraph(sensorData) {
 
         // avg humidity
         humidityTraces.push({
-            x: g.times, y: g.avg_humids, name: `${name} avg %`,
-            mode: 'lines', line: {color: averageLineColour, width: 0},
-            fill: 'tonexty',
+            x: g.times, y: g.avg_humids, name: `${name} avg humidity`,
+            mode: 'lines', line: {color: averageLineColour, width: 2}
         })
 
 
