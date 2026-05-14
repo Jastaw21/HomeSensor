@@ -33,7 +33,7 @@ const INITIAL_DAILY_AXIS_LIMITS = {
 
 // Helpers
 function redrawPlot(elementName,traces,layout){
-    Plotly.Purge(elementName);
+    Plotly.purge(elementName);
     Plotly.newPlot(elementName, traces, layout, PLOT_CONFIG);
 }
 
