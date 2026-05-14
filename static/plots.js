@@ -1,6 +1,56 @@
 const MOCK = false;
-
+const LAYOUT_BASE = {
+    paper_bgcolor: 'transparent',
+    plot_bgcolor: 'transparent',
+    autosize: true,
+    font: {color: '#8BA99A', size: 12, family: 'Roboto, sans-serif'},
+    margin: {t: 10, r: 50, b: 50, l: 50},
+    xaxis: {gridcolor: '#1F4A4A', linecolor: '#1F4A4A', type: 'date'},
+    yaxis: {gridcolor: '#1F4A4A', linecolor: '#1F4A4A', range: [15, 25]},
+    yaxis2: {gridcolor: 'transparent', linecolor: '#1F4A4A', range: [20, 90]},
+    hovermode: 'x unified',
+    legend: {
+        orientation: 'h',
+        x: 0.5,
+        xanchor: 'center',
+        y: -0.2,
+        yanchor: 'top',
+        bgcolor: '#06110B', font: {color: ' #8BA99A'}
+    },
+    showlegend: true,
+    dragmode: false,
+};
+const PLOT_CONFIG = {responsive: true, displayModeBar: false};
 const key = new URLSearchParams(window.location.search).get('key');
+const DAILY_GRAPH_FILL_COLOUR = 'rgba(18, 195, 90, 0.16)';
+
+const INITIAL_DAILY_AXIS_LIMITS = {
+    tempMinAxis: 0.0,
+    tempMaxAxis: 40.0,
+    humidityMinAxis: 101.0,
+    humidityMaxAxis: 0.0
+};
+
+// Helpers
+function redrawPlot(elementName,traces,layout){
+    Plotly.Purge(elementName);
+    Plotly.newPlot(elementName, traces, layout, PLOT_CONFIG);
+}
+
+function generateAxisLimits(maxTemp, minTemp, maxHumidity, minHumidity) {
+    let tempRange = maxTemp - minTemp;
+    let humidityRange = maxHumidity - minHumidity;
+
+    if (tempRange < 10) tempRange = 10; // clamp to 10 deg
+    if (humidityRange < 30) humidityRange = 30;
+
+    let tempMinAxis = minTemp - tempRange * 0.15;
+    let tempMaxAxis = maxTemp + tempRange * 0.15;
+
+    let humidityMinAxis = minHumidity - humidityRange * 0.15;
+    let humidityMaxAxis = maxHumidity + humidityRange * 0.15;
+    return {tempMinAxis, tempMaxAxis, humidityMinAxis, humidityMaxAxis};
+}
 
 function parseUtcTimestamp(timestamp) {
     if (!timestamp) return null;
@@ -9,6 +59,8 @@ function parseUtcTimestamp(timestamp) {
     return new Date(hasTimezone ? timestamp : `${timestamp}Z`);
 }
 
+
+// Data mockers for local testing
 function generateMockHighResData() {
     const now = Date.now();
     const data = [];
@@ -24,7 +76,6 @@ function generateMockHighResData() {
     }
     return data;
 }
-
 
 function generateMockDailyData() {
     const now = Date.now();
@@ -47,29 +98,7 @@ function generateMockDailyData() {
     return data;
 }
 
-const layout_base = {
-    paper_bgcolor: 'transparent',
-    plot_bgcolor: 'transparent',
-    autosize: true,
-    font: {color: '#8BA99A', size: 12, family: 'Roboto, sans-serif'},
-    margin: {t: 10, r: 50, b: 50, l: 50},
-    xaxis: {gridcolor: '#1F4A4A', linecolor: '#1F4A4A', type: 'date'},
-    yaxis: {gridcolor: '#1F4A4A', linecolor: '#1F4A4A', range: [15, 25]},
-    yaxis2: {gridcolor: 'transparent', linecolor: '#1F4A4A', range: [20, 90]},
-    hovermode: 'x unified',
-    legend: {
-        orientation: 'h',
-        x: 0.5,
-        xanchor: 'center',
-        y: -0.2,
-        yanchor: 'top',
-        bgcolor: '#06110B', font: {color: ' #8BA99A'}
-    },
-    showlegend: true,
-    dragmode: false,
-};
-const config = {responsive: true, displayModeBar: false};
-
+// Data getting
 async function fetchRecordData() {
     const res = await fetch(`/records`, {
         headers: {'X-API-Key': key}
@@ -129,6 +158,7 @@ async function fetchHighResData() {
         : data.filter(d => (d.sensor || `Sensor ${d.sensor_id}`) === sensorFilter);
 }
 
+// page updaters
 function updateLatestReadings(data) {
     if (!data || data.length === 0) return;
 
@@ -147,6 +177,18 @@ function updateLatestReadings(data) {
         formattedTime || 'N/A';
 }
 
+// fetches the most upto date records, and calls the updateRecords function
+async function updateRecords() {
+    const records = await fetchRecordData();
+    updateRecordsCards(
+        records.find(r => r.type === 'high_temp')
+        , records.find(r => r.type === 'low_temp')
+        , records.find(r => r.type === 'high_humidity')
+        , records.find(r => r.type === 'low_humidity')
+    )
+}
+
+// applies the updated record values to the relevant cards in the page
 function updateRecordsCards(highestTemp, lowestTemp, highestHumidity, lowestHumidity) {
     document.getElementById('record-high-value').textContent =
         highestTemp?.value?.toFixed(1) + ' C' || 'N/A';
@@ -169,12 +211,23 @@ function updateRecordsCards(highestTemp, lowestTemp, highestHumidity, lowestHumi
         lowestHumidity?.timestamp ? parseUtcTimestamp(lowestHumidity.timestamp).toLocaleString() : 'N/A';
 }
 
-async function drawDailyGraph(filtered) {
+// updates the min and max values seen so far, when building the daily graphs
+function updateSensorRanges(minTemp, g, maxTemp, minHumidity, maxHumidity) {
+    minTemp = Math.min(minTemp, Math.min(...g.min_temps));
+    maxTemp = Math.max(maxTemp, Math.max(...g.max_temps));
+    minHumidity = Math.min(minHumidity, Math.min(...g.min_humids));
+    maxHumidity = Math.max(maxHumidity, Math.max(...g.max_humids));
+    return {minTemp, maxTemp, minHumidity, maxHumidity};
+}
 
-    const avgTempColour = '#12c35a';
+// Updates the daily level summary graphs for temps and humid ranges
+async function drawDailyGraph(sensorData) {
 
+    const averageLineColour = '#12c35a';
+
+    // apply the grouping by sensor level
     const groups = {};
-    filtered.forEach(d => {
+    sensorData.forEach(d => {
         const name = d.sensor || 'Sensor ' + d.sensor_id;
         if (!groups[name]) groups[name] = {
             times: [],
@@ -195,20 +248,20 @@ async function drawDailyGraph(filtered) {
     })
 
 
-    let minTemp = 40.0;
-    let maxTemp = 0.0;
-    let minHumidity = 101.0;
-    let maxHumidity = 0.0;
+    // initial axis limits - should exceed any actual reading on both sides
+    let {minTemp, maxTemp, minHumidity, maxHumidity} = INITIAL_DAILY_AXIS_LIMITS;
 
     const tempTraces = [];
     const humidityTraces = [];
 
     for (const [name, g] of Object.entries(groups)) {
 
-        minTemp = Math.min(minTemp, Math.min(...g.min_temps));
-        maxTemp = Math.max(maxTemp, Math.max(...g.max_temps));
-        minHumidity = Math.min(minHumidity, Math.min(...g.min_humids));
-        maxHumidity = Math.max(maxHumidity, Math.max(...g.max_humids));
+        // update the most extreme values seen so far
+        const cSR = updateSensorRanges(minTemp, g, maxTemp, minHumidity, maxHumidity);
+        minTemp = cSR.minTemp;
+        maxTemp = cSR.maxTemp;
+        minHumidity = cSR.minHumidity;
+        maxHumidity = cSR.maxHumidity;
 
 
         // low temp
@@ -218,20 +271,20 @@ async function drawDailyGraph(filtered) {
             showlegend: false,
             hoverinfo: 'skip'
         });
+
         // high temp
-        const transparent_colour = 'rgba(18, 195, 90, 0.16)';
         tempTraces.push({
             x: g.times, y: g.max_temps, name: `${name} max C`,
             mode: 'lines', line: {color: '#000', width: 0},
             fill: 'tonexty',
-            fillcolor: transparent_colour,
+            fillcolor: DAILY_GRAPH_FILL_COLOUR,
             showlegend: false,
             hoverinfo: 'skip'
         });
         // avg temp
         tempTraces.push({
             x: g.times, y: g.avg_temps, name: `${name} avg temp`,
-            mode: 'lines', line: {color: avgTempColour, width: 2},
+            mode: 'lines', line: {color: averageLineColour, width: 2},
         });
 
         // low humidity
@@ -246,7 +299,7 @@ async function drawDailyGraph(filtered) {
             x: g.times, y: g.max_humids, name: `${name} max %`,
             mode: 'lines', line: {color: '#000', width: 0},
             fill: 'tonexty',
-            fillcolor: transparent_colour,
+            fillcolor: DAILY_GRAPH_FILL_COLOUR,
             showlegend: false,
             hoverinfo: 'skip'
         })
@@ -254,7 +307,7 @@ async function drawDailyGraph(filtered) {
         // avg humidity
         humidityTraces.push({
             x: g.times, y: g.avg_humids, name: `${name} avg %`,
-            mode: 'lines', line: {color: '#000', width: 0},
+            mode: 'lines', line: {color: averageLineColour, width: 0},
             fill: 'tonexty',
         })
 
@@ -269,49 +322,30 @@ async function drawDailyGraph(filtered) {
     } = generateAxisLimits(maxTemp, minTemp, maxHumidity, minHumidity);
 
     const tempsGraphLayout = {
-        ...layout_base,
+        ...LAYOUT_BASE,
         xaxis:
             {
-                ...layout_base.xaxis,
+                ...LAYOUT_BASE.xaxis,
                 tickformat: '%H:%M\n%d %b',
                 hoverformat: '%d %b %H:%M'
             },
-        yaxis: {...layout_base.yaxis, title: '°C', range: [tempMinAxis, tempMaxAxis]},
+        yaxis: {...LAYOUT_BASE.yaxis, title: '°C', range: [tempMinAxis, tempMaxAxis]},
     }
 
     const humidsGraphLayout = {
-        ...layout_base,
+        ...LAYOUT_BASE,
         xaxis:
             {
-                ...layout_base.xaxis,
+                ...LAYOUT_BASE.xaxis,
                 tickformat: '%H:%M\n%d %b',
                 hoverformat: '%d %b %H:%M'
             },
-        yaxis: {...layout_base.yaxis, title: '°C', range: [humidityMinAxis, humidityMaxAxis]},
+        yaxis: {...LAYOUT_BASE.yaxis, title: '%', range: [humidityMinAxis, humidityMaxAxis]},
     }
 
-    // rebuil the temps graph
-    Plotly.purge('daily-graph');
-    Plotly.newPlot('daily-graph', tempTraces, tempsGraphLayout, config)
-
-    // rebuild the humidity graph
-    Plotly.purge('daily-humidity-graph');
-    Plotly.newPlot('daily-humidity-graph', humidityTraces, humidsGraphLayout, config)
-}
-
-function generateAxisLimits(maxTemp, minTemp, maxHumidity, minHumidity) {
-    let tempRange = maxTemp - minTemp;
-    let humidityRange = maxHumidity - minHumidity;
-
-    if (tempRange < 10) tempRange = 10; // clamp to 10 deg
-    if (humidityRange < 30) humidityRange = 30;
-
-    let tempMinAxis = minTemp - tempRange * 0.15;
-    let tempMaxAxis = maxTemp + tempRange * 0.15;
-
-    let humidityMinAxis = minHumidity - humidityRange * 0.15;
-    let humidityMaxAxis = maxHumidity + humidityRange * 0.15;
-    return {tempMinAxis, tempMaxAxis, humidityMinAxis, humidityMaxAxis};
+    // rebuil the grapha
+    redrawPlot('daily-graph', tempTraces, tempsGraphLayout);
+    redrawPlot('daily-humidity-graph', humidityTraces, humidsGraphLayout);
 }
 
 async function drawHighResGraph(filtered) {
@@ -365,15 +399,15 @@ async function drawHighResGraph(filtered) {
     } = generateAxisLimits(maxTemp, minTemp, maxHumidity, minHumidity);
 
     const layout = {
-        ...layout_base,
+        ...LAYOUT_BASE,
         xaxis: {
-            ...layout_base.xaxis,
+            ...LAYOUT_BASE.xaxis,
             tickformat: '%H:%M\n%d %b',
             hoverformat: '%d %b %H:%M'
         },
-        yaxis: {...layout_base.yaxis, title: '°C', range: [tempMinAxis, tempMaxAxis]},
+        yaxis: {...LAYOUT_BASE.yaxis, title: '°C', range: [tempMinAxis, tempMaxAxis]},
         yaxis2: {
-            ...layout_base.yaxis2,
+            ...LAYOUT_BASE.yaxis2,
             title: '%',
             overlaying: 'y',
             side: 'right',
@@ -382,19 +416,11 @@ async function drawHighResGraph(filtered) {
     };
 
     Plotly.purge('chart-overview');
-    Plotly.newPlot('chart-overview', traces, layout, config);
+    Plotly.newPlot('chart-overview', traces, layout, PLOT_CONFIG);
 }
 
 
-async function updateRecords() {
-    const records = await fetchRecordData();
-    updateRecordsCards(
-        records.find(r => r.type === 'high_temp')
-        , records.find(r => r.type === 'low_temp')
-        , records.find(r => r.type === 'high_humidity')
-        , records.find(r => r.type === 'low_humidity')
-    )
-}
+
 
 async function runPage() {
 
@@ -413,6 +439,7 @@ async function runPage() {
     await updateRecords();
 }
 
+// run on startup
 document.getElementById('range-filter').addEventListener('change', runPage);
 document.getElementById('sensor-filter').addEventListener('change', runPage);
 window.runPage = runPage;
