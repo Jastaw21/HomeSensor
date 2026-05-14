@@ -63,7 +63,7 @@ const layout_base = {
         xanchor: 'center',
         y: -0.2,
         yanchor: 'top',
-        bgcolor: '#06110B', font: {color:' #8BA99A'}
+        bgcolor: '#06110B', font: {color: ' #8BA99A'}
     },
     showlegend: true,
     dragmode: false,
@@ -200,7 +200,8 @@ async function drawDailyGraph(filtered) {
     let minHumidity = 101.0;
     let maxHumidity = 0.0;
 
-    const traces = [];
+    const tempTraces = [];
+    const humidityTraces = [];
 
     for (const [name, g] of Object.entries(groups)) {
 
@@ -211,7 +212,7 @@ async function drawDailyGraph(filtered) {
 
 
         // low temp
-        traces.push({
+        tempTraces.push({
             x: g.times, y: g.min_temps, name: `${name} min C`,
             mode: 'lines', line: {color: '#000', width: 0},
             showlegend: false,
@@ -219,7 +220,7 @@ async function drawDailyGraph(filtered) {
         });
         // high temp
         const transparent_colour = 'rgba(18, 195, 90, 0.16)';
-        traces.push({
+        tempTraces.push({
             x: g.times, y: g.max_temps, name: `${name} max C`,
             mode: 'lines', line: {color: '#000', width: 0},
             fill: 'tonexty',
@@ -228,20 +229,46 @@ async function drawDailyGraph(filtered) {
             hoverinfo: 'skip'
         });
         // avg temp
-        traces.push({
+        tempTraces.push({
             x: g.times, y: g.avg_temps, name: `${name} avg temp`,
             mode: 'lines', line: {color: avgTempColour, width: 2},
         });
+
+        // low humidity
+        humidityTraces.push({
+            x: g.times, y: g.min_humids, name: `${name} min %`,
+            mode: 'lines', line: {color: '#000', width: 0},
+            showlegend: false,
+            hoverinfo: 'skip'
+        });
+        // high humidity
+        humidityTraces.push({
+            x: g.times, y: g.max_humids, name: `${name} max %`,
+            mode: 'lines', line: {color: '#000', width: 0},
+            fill: 'tonexty',
+            fillcolor: transparent_colour,
+            showlegend: false,
+            hoverinfo: 'skip'
+        })
+
+        // avg humidity
+        humidityTraces.push({
+            x: g.times, y: g.avg_humids, name: `${name} avg %`,
+            mode: 'lines', line: {color: '#000', width: 0},
+            fill: 'tonexty',
+        })
 
 
     }
 
     let {
         tempMinAxis,
-        tempMaxAxis
+        tempMaxAxis,
+        humidityMinAxis,
+        humidityMaxAxis
     } = generateAxisLimits(maxTemp, minTemp, maxHumidity, minHumidity);
 
-    const layout = {
+    const tempsGraphLayout = {
         ...layout_base,
         xaxis:
             {
@@ -249,10 +276,27 @@ async function drawDailyGraph(filtered) {
                 tickformat: '%H:%M\n%d %b',
                 hoverformat: '%d %b %H:%M'
             },
-        yaxis: {...layout_base.yaxis, title: '°C', range:[tempMinAxis, tempMaxAxis]},
+        yaxis: {...layout_base.yaxis, title: '°C', range: [tempMinAxis, tempMaxAxis]},
     }
+
+    const humidsGraphLayout = {
+        ...layout_base,
+        xaxis:
+            {
+                ...layout_base.xaxis,
+                tickformat: '%H:%M\n%d %b',
+                hoverformat: '%d %b %H:%M'
+            },
+        yaxis: {...layout_base.yaxis, title: '°C', range: [humidityMinAxis, humidityMaxAxis]},
+    }
+
+    // rebuil the temps graph
     Plotly.purge('daily-graph');
-    Plotly.newPlot('daily-graph', traces, layout, config)
+    Plotly.newPlot('daily-graph', tempTraces, tempsGraphLayout, config)
+
+    // rebuild the humidity graph
+    Plotly.purge('daily-humidity-graph');
+    Plotly.newPlot('daily-humidity-graph', humidityTraces, humidsGraphLayout, config)
 }
 
 function generateAxisLimits(maxTemp, minTemp, maxHumidity, minHumidity) {
@@ -327,8 +371,14 @@ async function drawHighResGraph(filtered) {
             tickformat: '%H:%M\n%d %b',
             hoverformat: '%d %b %H:%M'
         },
-        yaxis: {...layout_base.yaxis, title: '°C', range:[tempMinAxis, tempMaxAxis]},
-        yaxis2: {...layout_base.yaxis2, title: '%', overlaying: 'y', side: 'right', range:[humidityMinAxis, humidityMaxAxis]},
+        yaxis: {...layout_base.yaxis, title: '°C', range: [tempMinAxis, tempMaxAxis]},
+        yaxis2: {
+            ...layout_base.yaxis2,
+            title: '%',
+            overlaying: 'y',
+            side: 'right',
+            range: [humidityMinAxis, humidityMaxAxis]
+        },
     };
 
     Plotly.purge('chart-overview');
