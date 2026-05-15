@@ -95,7 +95,7 @@ def get_hourly_readings(session: Session = Depends(get_session)):
 
 
 @app.get("/data/daily")
-def get_hourly_readings(session: Session = Depends(get_session)):
+def get_daily_readings(session: Session = Depends(get_session)):
     row_number = int(14)
     readings = session.exec(
         select(DailyReading)
@@ -124,7 +124,7 @@ def get_jobs():
 
 
 @app.get("/data/granular")
-def get_readings(session: Session = Depends(get_session)):
+def get_granular_readings(session: Session = Depends(get_session)):
     # get the last 14 days of data
     row_number = int(14 * 24 * (60 / 5))  # assuming 5 minute readings
     readings = session.exec(
@@ -144,6 +144,10 @@ def get_readings(session: Session = Depends(get_session)):
             "sensor": sensor.name if sensor else None
         })
     return result
+
+@app.get("/data/{hours}")
+def get_scaled_data(hours: int, session : Session = Depends(get_session)):
+    return {"name" : hours}
 
 
 @app.get("/data/record")
