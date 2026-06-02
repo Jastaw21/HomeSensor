@@ -129,7 +129,8 @@ async function fetchHighResData() {
         data = generateMockHighResData();
     } else {
         document.getElementById('status').textContent = 'Loading...';
-        const res = await fetch('/data/granular', {headers: {'X-API-Key': key}});
+        const params = new URLSearchParams({hours: '8735'});
+        const res = await fetch(`/data/consol?${params.toString()}`, {headers: {'X-API-Key': key} });
         data = await res.json();
     }
 
@@ -142,7 +143,7 @@ async function fetchHighResData() {
     const sensorFilter = document.getElementById('sensor-filter').value;
 
     // Populate sensor dropdown
-    const sensors = [...new Set(data.map(d => d.sensor || `Sensor ${d.sensor_id}`))];
+    const sensors = [...new Set(data.map(d => d.sensor.name || `Sensor ${d.sensor.id}`))];
     const sel = document.getElementById('sensor-filter');
     const current = sel.value;
     sel.innerHTML = '<option value="all">All sensors</option>';
@@ -155,7 +156,7 @@ async function fetchHighResData() {
     });
 
     return sensorFilter === 'all' ? data
-        : data.filter(d => (d.sensor || `Sensor ${d.sensor_id}`) === sensorFilter);
+        : data.filter(d => (d.sensor.name || `Sensor ${d.sensor.id}`) === sensorFilter);
 }
 
 // page updaters

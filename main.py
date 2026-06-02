@@ -100,7 +100,7 @@ def get_daily_readings(session: Session = Depends(get_session)):
     row_number = int(14)
     readings = session.exec(
         select(DailyReading)
-        .order_by(DailyReading.timestamp.desc()) # type: ignore
+        .order_by(DailyReading.timestamp.desc())  # type: ignore
         .limit(int(row_number))
     ).all()
     results = []
@@ -130,7 +130,7 @@ def get_granular_readings(session: Session = Depends(get_session)):
     row_number = int(14 * 24 * (60 / 5))  # assuming 5 minute readings
     readings = session.exec(
         select(SensorReading)
-        .order_by(SensorReading.timestamp.desc()) # type: ignore
+        .order_by(SensorReading.timestamp.desc())  # type: ignore
         .limit(int(row_number))
     ).all()
     result = []
@@ -146,28 +146,28 @@ def get_granular_readings(session: Session = Depends(get_session)):
         })
     return result
 
+
 # lookup dict for hours ago, to granularity of data to retrieve
-HISTORY_DATA_STEPS =[
-    {24 : "full"},
-    {24*7 : "hourly"}
+HISTORY_DATA_STEPS = [
+    {24: "full"},
+    {24 * 7: "hourly"}
 ]
 
 
-@app.get("/consol")
-def get_scaled_data(hours: int, session : Session = Depends(get_session)):
+@app.get("/data/consol")
+def get_scaled_data(hours: int, session: Session = Depends(get_session)):
     granular_hours_to_retrieve = min(24, hours)
-    remaining_hourly_hours_to_retrieve = hours- granular_hours_to_retrieve
-   
-    
+    remaining_hourly_hours_to_retrieve = hours - granular_hours_to_retrieve
+
     full_granular_readings = session.exec(
-            text(
-                f"SELECT * "
-                f"FROM sensorreading "
-                f"WHERE timestamp >= datetime('now', '-{granular_hours_to_retrieve} hour') "
-                f"ORDER BY timestamp DESC "               
-            ) # type: ignore
-        ) # type: ignore
-    
+        text(
+            f"SELECT * "
+            f"FROM sensorreading "
+            f"WHERE timestamp >= datetime('now', '-{granular_hours_to_retrieve} hour') "
+            f"ORDER BY timestamp DESC "
+        )  # type: ignore
+    )  # type: ignore
+
     hourly_readings = session.exec(
         text(
             f"SELECT temp_avg as temp, "
@@ -175,33 +175,36 @@ def get_scaled_data(hours: int, session : Session = Depends(get_session)):
             f"timestamp, "
             f"sensor_id "
             f"FROM hourly_data "
-            f"WHERE timestamp < datetime('now', '-{granular_hours_to_retrieve} hour') AND timestamp >= datetime('now', '-{granular_hours_to_retrieve + remaining_hourly_hours_to_retrieve} hour') "
+            f"WHERE timestamp < datetime('now', '-{granular_hours_to_retrieve} hour') "
+            f"AND timestamp >= datetime('now', '-{granular_hours_to_retrieve + remaining_hourly_hours_to_retrieve} hour') "
             f"ORDER BY timestamp desc"
 
-        ) # type: ignore
+        )  # type: ignore
     )
 
     results = []
     for reading in hourly_readings:
-        sensor = session.get(Sensor, reading.sensor_id) if reading.sensor_id else None        
+        sensor = session.get(Sensor, reading.sensor_id) if reading.sensor_id else None
         results.append({
-            "temp" : reading.temp,
-            "humidity" : reading.humidity,
-            "timestamp" : reading.timestamp,
-            "sensor_id" : reading.sensor_id,
-            "sensor" : sensor if sensor else None
+            "temp": reading.temp,
+            "humidity": reading.humidity,
+            "timestamp": reading.timestamp,
+            "sensor_id": reading.sensor_id,
+            "sensor": sensor if sensor else None
         })
 
     for reading in full_granular_readings:
         sensor = session.get(Sensor, reading.sensor_id) if reading.sensor_id else None
         results.append({
-                        "temp" : reading.temp,
-            "humidity" : reading.humidity,
-            "timestamp" : reading.timestamp,
-            "sensor_id" : reading.sensor_id,
-            "sensor" : sensor if sensor else None
-            }
+            "temp": reading.temp,
+            "humidity": reading.humidity,
+            "timestamp": reading.timestamp,
+            "sensor_id": reading.sensor_id,
+            "sensor": sensor if sensor else None
+        }
         )
+
+    results.sort(key=lambda x: x["timestamp"], reverse=True)
 
     return results
 
@@ -216,8 +219,8 @@ def get_record(temp: bool, high: bool, session: Session = Depends(get_session)):
             text(
                 f"SELECT temp, humidity, timestamp FROM sensorreading "
                 f"WHERE temp = (SELECT {func}(temp) FROM sensorreading) "
-                f"ORDER BY timestamp DESC LIMIT 1") # type: ignore
-        ).first() # type: ignore
+                f"ORDER BY timestamp DESC LIMIT 1")  # type: ignore
+        ).first()  # type: ignore
         if not result:
             return {}
         return {temp: result[0], "humidity": result[1], "date": result[2]}
@@ -225,9 +228,9 @@ def get_record(temp: bool, high: bool, session: Session = Depends(get_session)):
         result = session.exec(text(
             f"SELECT temp, humidity, timestamp FROM sensorreading "
             f"WHERE humidity = (SELECT {func}(humidity) FROM sensorreading) "
-            f"ORDER BY timestamp DESC LIMIT 1") # type: ignore
+            f"ORDER BY timestamp DESC LIMIT 1")  # type: ignore
 
-        ).first() # type: ignore
+        ).first()  # type: ignore
         if not result:
             return {}
         return {"temp": result[0], "humidity": result[1], "timestamp": result[2]}
@@ -244,17 +247,17 @@ def create_sensor(sensor: Sensor, session: Session = Depends(get_session)):
 @app.get("/records")
 def get_records(session: Session = Depends(get_session)):
     high_temp_record = session.exec(text(
-        f"SELECT temp, timestamp FROM sensorreading ORDER BY temp DESC LIMIT 1") # type: ignore
-    ).first() # type: ignore
+        f"SELECT temp, timestamp FROM sensorreading ORDER BY temp DESC LIMIT 1")  # type: ignore
+    ).first()  # type: ignore
     low_temp_record = session.exec(text(
-        f"SELECT temp, timestamp FROM sensorreading ORDER BY temp ASC LIMIT 1") # type: ignore
-    ).first() # type: ignore
+        f"SELECT temp, timestamp FROM sensorreading ORDER BY temp ASC LIMIT 1")  # type: ignore
+    ).first()  # type: ignore
     high_humidity_record = session.exec(text(
-        f"SELECT humidity, timestamp FROM sensorreading ORDER BY humidity DESC LIMIT 1") # type: ignore
-    ).first() # type: ignore
+        f"SELECT humidity, timestamp FROM sensorreading ORDER BY humidity DESC LIMIT 1")  # type: ignore
+    ).first()  # type: ignore
     low_humidity_record = session.exec(text(
-        f"SELECT humidity, timestamp FROM sensorreading ORDER BY humidity ASC LIMIT 1") # type: ignore
-    ).first() # type: ignore
+        f"SELECT humidity, timestamp FROM sensorreading ORDER BY humidity ASC LIMIT 1")  # type: ignore
+    ).first()  # type: ignore
 
     return [
         {
