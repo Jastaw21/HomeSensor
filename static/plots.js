@@ -353,7 +353,7 @@ async function drawHighResGraph(filtered) {
     // Group by sensor
     const groups = {};
     filtered.forEach(d => {
-        const name = d.sensor || `Sensor ${d.sensor_id}`;
+        const name = d.sensor.name || `Sensor ${d.sensor.id}`;
         if (!groups[name]) groups[name] = {times: [], temps: [], humids: []};
         groups[name].times.push(parseUtcTimestamp(d.timestamp)); // in local time
         groups[name].temps.push(d.temp);

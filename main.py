@@ -97,7 +97,7 @@ def get_hourly_readings(session: Session = Depends(get_session)):
 
 @app.get("/data/daily")
 def get_daily_readings(session: Session = Depends(get_session)):
-    row_number = int(14)
+    row_number = int(364)
     readings = session.exec(
         select(DailyReading)
         .order_by(DailyReading.timestamp.desc())  # type: ignore
