@@ -360,7 +360,7 @@ async function drawHighResGraph(filtered) {
         groups[name].humids.push(d.humidity);
     });
 
-    const colors = ['#12c35a', '#10b981', '#38BDF8', '#ef4444', '#8b5cf6'];
+    const colors = ['#12c35a', '#38BDF8', '#38BDF8', '#ef4444', '#8b5cf6'];
     let ci = 0;
 
     const traces = [];
