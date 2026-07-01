@@ -229,7 +229,7 @@ async function drawDailyGraph(sensorData) {
     // apply the grouping by sensor level
     const groups = {};
     sensorData.forEach(d => {
-        const name = d.sensor || 'Sensor ' + d.sensor_id;
+        const name = d.sensor.name || 'Sensor ' + d.sensor_id;
         if (!groups[name]) groups[name] = {
             times: [],
             min_temps: [],
@@ -386,7 +386,7 @@ async function drawHighResGraph(filtered) {
         });
         traces.push({
             x: g.times, y: g.humids, name: `${name} humidity`,
-            mode: 'lines', line: {color: col2, width: 2, dash: 'dot'},
+            mode: 'lines', line: {color: col, width: 2, dash: 'dot'},
             yaxis: 'y2', hovertemplate: '%{y:.1f}%'
         });
     }
