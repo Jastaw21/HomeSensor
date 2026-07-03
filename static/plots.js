@@ -360,7 +360,7 @@ async function drawHighResGraph(filtered) {
         groups[name].humids.push(d.humidity);
     });
 
-    const colors = ['#12c35a', '#10b981', '#38BDF8', '#ef4444', '#8b5cf6'];
+    const colors = ['#12c35a', '#38BDF8', '#38BDF8', '#ef4444', '#8b5cf6'];
     let ci = 0;
 
     const traces = [];
@@ -386,7 +386,7 @@ async function drawHighResGraph(filtered) {
         });
         traces.push({
             x: g.times, y: g.humids, name: `${name} humidity`,
-            mode: 'lines', line: {color: col2, width: 2, dash: 'dot'},
+            mode: 'lines', line: {color: col, width: 2, dash: 'dot'},
             yaxis: 'y2', hovertemplate: '%{y:.1f}%'
         });
     }
