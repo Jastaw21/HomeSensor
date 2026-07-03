@@ -81,6 +81,7 @@ def get_hourly_readings(session: Session = Depends(get_session)):
     ).all()
     results = []
     for r in readings:
+        sensor = session.get(Sensor, r.sensor_id) if r.sensor_id else None
         results.append({
             "timestamp": r.timestamp,
             "temp_avg": r.temp_avg,
@@ -89,7 +90,8 @@ def get_hourly_readings(session: Session = Depends(get_session)):
             "humidity_avg": r.humidity_avg,
             "humidity_min": r.humidity_min,
             "humidity_max": r.humidity_max,
-            "sensor_id": r.sensor_id
+            "sensor_id": r.sensor_id,
+            "sensor": sensor.name if sensor else None
         })
 
     return results
@@ -105,6 +107,7 @@ def get_daily_readings(session: Session = Depends(get_session)):
     ).all()
     results = []
     for r in readings:
+        sensor = session.get(Sensor, r.sensor_id) if r.sensor_id else None
         results.append({
             "timestamp": r.timestamp,
             "temp_avg": r.temp_avg,
@@ -113,6 +116,7 @@ def get_daily_readings(session: Session = Depends(get_session)):
             "humidity_avg": r.humidity_avg,
             "humidity_min": r.humidity_min,
             "humidity_max": r.humidity_max,
+            "sensor": sensor.name if sensor else None
         })
 
     return results
