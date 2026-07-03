@@ -229,7 +229,7 @@ async function drawDailyGraph(sensorData) {
     // apply the grouping by sensor level
     const groups = {};
     sensorData.forEach(d => {
-        const name = d.sensor || 'Sensor ' + d.sensor_id;
+        const name = d.sensor.name || 'Sensor ' + d.sensor.id;
         if (!groups[name]) groups[name] = {
             times: [],
             min_temps: [],
