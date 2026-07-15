@@ -32,7 +32,7 @@ const INITIAL_DAILY_AXIS_LIMITS = {
 };
 
 // Helpers
-function redrawPlot(elementName,traces,layout){
+function redrawPlot(elementName, traces, layout) {
     Plotly.purge(elementName);
     Plotly.newPlot(elementName, traces, layout, PLOT_CONFIG);
 }
@@ -120,7 +120,29 @@ async function fetchDailyData() {
         const res = await fetch('/data/daily', {headers: {'X-API-Key': key}});
         data = await res.json();
     }
-    return data;
+
+    const sensorFilter = document.getElementById('sensor-filter').value;
+
+
+    // Populate sensor dropdown
+    updateSensorFilter(data);
+
+    return sensorFilter === 'all' ? data
+        : data.filter(d => (d.sensor.name || `Sensor ${d.sensor.id}`) === sensorFilter);
+}
+
+function updateSensorFilter(sensorData) {
+    const sensors = [...new Set(sensorData.map(d => d.sensor.name || `Sensor ${d.sensor.id}`))];
+    const sel = document.getElementById('sensor-filter');
+    const current = sel.value;
+    sel.innerHTML = '<option value="all">All sensors</option>';
+    sensors.forEach(s => {
+        const opt = document.createElement('option');
+        opt.value = s;
+        opt.textContent = s;
+        if (s === current) opt.selected = true;
+        sel.appendChild(opt);
+    });
 }
 
 async function fetchHighResData() {
@@ -130,7 +152,7 @@ async function fetchHighResData() {
     } else {
         document.getElementById('status').textContent = 'Loading...';
         const params = new URLSearchParams({hours: '8735'});
-        const res = await fetch(`/data/consol?${params.toString()}`, {headers: {'X-API-Key': key} });
+        const res = await fetch(`/data/consol?${params.toString()}`, {headers: {'X-API-Key': key}});
         data = await res.json();
     }
 
@@ -142,18 +164,9 @@ async function fetchHighResData() {
 
     const sensorFilter = document.getElementById('sensor-filter').value;
 
+
     // Populate sensor dropdown
-    const sensors = [...new Set(data.map(d => d.sensor.name || `Sensor ${d.sensor.id}`))];
-    const sel = document.getElementById('sensor-filter');
-    const current = sel.value;
-    sel.innerHTML = '<option value="all">All sensors</option>';
-    sensors.forEach(s => {
-        const opt = document.createElement('option');
-        opt.value = s;
-        opt.textContent = s;
-        if (s === current) opt.selected = true;
-        sel.appendChild(opt);
-    });
+    updateSensorFilter(data);
 
     return sensorFilter === 'all' ? data
         : data.filter(d => (d.sensor.name || `Sensor ${d.sensor.id}`) === sensorFilter);
@@ -258,11 +271,11 @@ async function drawDailyGraph(sensorData) {
     for (const [name, g] of Object.entries(groups)) {
 
         // update the most extreme values seen so far
-        const cSR = updateSensorRanges(minTemp, g, maxTemp, minHumidity, maxHumidity);
-        minTemp = cSR.minTemp;
-        maxTemp = cSR.maxTemp;
-        minHumidity = cSR.minHumidity;
-        maxHumidity = cSR.maxHumidity;
+        const sensorRanges = updateSensorRanges(minTemp, g, maxTemp, minHumidity, maxHumidity);
+        minTemp = sensorRanges.minTemp;
+        maxTemp = sensorRanges.maxTemp;
+        minHumidity = sensorRanges.minHumidity;
+        maxHumidity = sensorRanges.maxHumidity;
 
 
         // low temp
@@ -358,10 +371,11 @@ async function drawHighResGraph(filtered) {
         groups[name].times.push(parseUtcTimestamp(d.timestamp)); // in local time
         groups[name].temps.push(d.temp);
         groups[name].humids.push(d.humidity);
+        groups[name].id = d.sensor.id;
     });
 
     const colors = ['#12c35a', '#38BDF8', '#38BDF8', '#ef4444', '#8b5cf6'];
-    let ci = 0;
+
 
     const traces = [];
 
@@ -371,8 +385,7 @@ async function drawHighResGraph(filtered) {
     let maxHumidity = 0.0;
 
     for (const [name, g] of Object.entries(groups)) {
-        const col = colors[ci++ % colors.length];
-        const col2 = colors[2];
+        const col = colors[g.id % colors.length];
 
 
         minTemp = Math.min(minTemp, Math.min(...g.temps));
@@ -419,8 +432,6 @@ async function drawHighResGraph(filtered) {
     Plotly.purge('chart-overview');
     Plotly.newPlot('chart-overview', traces, layout, PLOT_CONFIG);
 }
-
-
 
 
 async function runPage() {
