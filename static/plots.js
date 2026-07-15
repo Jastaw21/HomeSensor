@@ -125,14 +125,14 @@ async function fetchDailyData() {
 
 
     // Populate sensor dropdown
-    updateSensorFilter();
+    updateSensorFilter(data);
 
     return sensorFilter === 'all' ? data
         : data.filter(d => (d.sensor.name || `Sensor ${d.sensor.id}`) === sensorFilter);
 }
 
-function updateSensorFilter() {
-    const sensors = [...new Set(data.map(d => d.sensor.name || `Sensor ${d.sensor.id}`))];
+function updateSensorFilter(sensorData) {
+    const sensors = [...new Set(sensorData.map(d => d.sensor.name || `Sensor ${d.sensor.id}`))];
     const sel = document.getElementById('sensor-filter');
     const current = sel.value;
     sel.innerHTML = '<option value="all">All sensors</option>';
@@ -166,7 +166,7 @@ async function fetchHighResData() {
 
 
     // Populate sensor dropdown
-    updateSensorFilter();
+    updateSensorFilter(data);
 
     return sensorFilter === 'all' ? data
         : data.filter(d => (d.sensor.name || `Sensor ${d.sensor.id}`) === sensorFilter);
