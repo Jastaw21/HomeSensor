@@ -32,7 +32,7 @@ const INITIAL_DAILY_AXIS_LIMITS = {
 };
 
 // Helpers
-function redrawPlot(elementName,traces,layout){
+function redrawPlot(elementName, traces, layout) {
     Plotly.purge(elementName);
     Plotly.newPlot(elementName, traces, layout, PLOT_CONFIG);
 }
@@ -120,29 +120,18 @@ async function fetchDailyData() {
         const res = await fetch('/data/daily', {headers: {'X-API-Key': key}});
         data = await res.json();
     }
-    return data;
-}
-
-async function fetchHighResData() {
-    let data;
-    if (MOCK) {
-        data = generateMockHighResData();
-    } else {
-        document.getElementById('status').textContent = 'Loading...';
-        const params = new URLSearchParams({hours: '8735'});
-        const res = await fetch(`/data/consol?${params.toString()}`, {headers: {'X-API-Key': key} });
-        data = await res.json();
-    }
-
-    const hours = parseInt(document.getElementById('range-filter').value);
-    if (hours > 0) {
-        const cutoff = new Date(Date.now() - hours * 3600000);
-        data = data.filter(d => parseUtcTimestamp(d.timestamp) >= cutoff);
-    }
 
     const sensorFilter = document.getElementById('sensor-filter').value;
 
+
     // Populate sensor dropdown
+    updateSensorFilter();
+
+    return sensorFilter === 'all' ? data
+        : data.filter(d => (d.sensor.name || `Sensor ${d.sensor.id}`) === sensorFilter);
+}
+
+function updateSensorFilter() {
     const sensors = [...new Set(data.map(d => d.sensor.name || `Sensor ${d.sensor.id}`))];
     const sel = document.getElementById('sensor-filter');
     const current = sel.value;
@@ -154,6 +143,30 @@ async function fetchHighResData() {
         if (s === current) opt.selected = true;
         sel.appendChild(opt);
     });
+}
+
+async function fetchHighResData() {
+    let data;
+    if (MOCK) {
+        data = generateMockHighResData();
+    } else {
+        document.getElementById('status').textContent = 'Loading...';
+        const params = new URLSearchParams({hours: '8735'});
+        const res = await fetch(`/data/consol?${params.toString()}`, {headers: {'X-API-Key': key}});
+        data = await res.json();
+    }
+
+    const hours = parseInt(document.getElementById('range-filter').value);
+    if (hours > 0) {
+        const cutoff = new Date(Date.now() - hours * 3600000);
+        data = data.filter(d => parseUtcTimestamp(d.timestamp) >= cutoff);
+    }
+
+    const sensorFilter = document.getElementById('sensor-filter').value;
+
+
+    // Populate sensor dropdown
+    updateSensorFilter();
 
     return sensorFilter === 'all' ? data
         : data.filter(d => (d.sensor.name || `Sensor ${d.sensor.id}`) === sensorFilter);
@@ -258,11 +271,11 @@ async function drawDailyGraph(sensorData) {
     for (const [name, g] of Object.entries(groups)) {
 
         // update the most extreme values seen so far
-        const cSR = updateSensorRanges(minTemp, g, maxTemp, minHumidity, maxHumidity);
-        minTemp = cSR.minTemp;
-        maxTemp = cSR.maxTemp;
-        minHumidity = cSR.minHumidity;
-        maxHumidity = cSR.maxHumidity;
+        const sensorRanges = updateSensorRanges(minTemp, g, maxTemp, minHumidity, maxHumidity);
+        minTemp = sensorRanges.minTemp;
+        maxTemp = sensorRanges.maxTemp;
+        minHumidity = sensorRanges.minHumidity;
+        maxHumidity = sensorRanges.maxHumidity;
 
 
         // low temp
@@ -362,7 +375,7 @@ async function drawHighResGraph(filtered) {
     });
 
     const colors = ['#12c35a', '#38BDF8', '#38BDF8', '#ef4444', '#8b5cf6'];
-    let ci = 0;
+
 
     const traces = [];
 
@@ -418,8 +431,6 @@ async function drawHighResGraph(filtered) {
     Plotly.purge('chart-overview');
     Plotly.newPlot('chart-overview', traces, layout, PLOT_CONFIG);
 }
-
-
 
 
 async function runPage() {
