@@ -374,6 +374,7 @@ async function drawHighResGraph(filtered) {
         const col = colors[ci++ % colors.length];
         const col2 = colors[2];
 
+
         minTemp = Math.min(minTemp, Math.min(...g.temps));
         maxTemp = Math.max(maxTemp, Math.max(...g.temps));
         minHumidity = Math.min(minHumidity, Math.min(...g.humids));
