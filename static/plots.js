@@ -358,6 +358,7 @@ async function drawHighResGraph(filtered) {
         groups[name].times.push(parseUtcTimestamp(d.timestamp)); // in local time
         groups[name].temps.push(d.temp);
         groups[name].humids.push(d.humidity);
+        groups[name].id = d.sensor.id;
     });
 
     const colors = ['#12c35a', '#38BDF8', '#38BDF8', '#ef4444', '#8b5cf6'];
@@ -371,8 +372,7 @@ async function drawHighResGraph(filtered) {
     let maxHumidity = 0.0;
 
     for (const [name, g] of Object.entries(groups)) {
-        const col = colors[ci++ % colors.length];
-        const col2 = colors[2];
+        const col = colors[g.id % colors.length];
 
         minTemp = Math.min(minTemp, Math.min(...g.temps));
         maxTemp = Math.max(maxTemp, Math.max(...g.temps));
