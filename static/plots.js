@@ -377,6 +377,7 @@ async function drawHighResGraph(filtered) {
     const colors = ['#12c35a', '#38BDF8', '#38BDF8', '#ef4444', '#8b5cf6'];
 
 
+
     const traces = [];
 
     let minTemp = 40.0;
