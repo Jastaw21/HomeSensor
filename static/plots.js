@@ -78,6 +78,7 @@ function generateMockHighResData() {
 }
 
 function generateMockDailyData() {
+    console.log("generating mock data");
     const now = Date.now();
     const data = [];
     for (let i = 24; i >= 0; i--) {
@@ -92,6 +93,21 @@ function generateMockDailyData() {
             timestamp: new Date(now - i * (3600000 * 24)).toISOString(),
             sensor_id: 1,
             sensor: "living room"
+        })
+    }
+    console.log(data);
+    for (let i = 24; i >= 0; i--) {
+        data.push({
+            id: i,
+            temp_avg: 20 + Math.sin(i / 20) * 4 + Math.random(),
+            temp_max: 26 + Math.sin(i / 20) * 4 + Math.random(),
+            temp_min: 16 + Math.sin(i / 20) * 4 + Math.random(),
+            humidity_avg: 55 + Math.cos(i / 15) * 8 + Math.random(),
+            humidity_max: 65 + Math.cos(i / 15) * 8 + Math.random(),
+            humidity_min: 45 + Math.cos(i / 15) * 8 + Math.random(),
+            timestamp: new Date(now - i * (3600000 * 24)).toISOString(),
+            sensor_id: 2,
+            sensor: "front-room"
         })
     }
 
@@ -115,6 +131,7 @@ async function fetchDailyData() {
     let data;
     if (MOCK) {
         data = generateMockDailyData();
+        console.log(data);
     } else {
         document.getElementById('status').textContent = 'Loading...';
         const res = await fetch('/data/daily', {headers: {'X-API-Key': key}});
