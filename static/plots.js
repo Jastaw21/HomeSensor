@@ -284,6 +284,7 @@ async function drawDailyGraph(sensorData) {
 
     const tempTraces = [];
     const humidityTraces = [];
+    const colours = ['#12c35a', '#38BDF8', '#f59e0b', '#ef4444', '#8b5cf6'];
 
     for (const [name, g] of Object.entries(groups)) {
 
@@ -293,6 +294,8 @@ async function drawDailyGraph(sensorData) {
         maxTemp = sensorRanges.maxTemp;
         minHumidity = sensorRanges.minHumidity;
         maxHumidity = sensorRanges.maxHumidity;
+
+        const thisColour = colours[(g.id - 1) % colours.length];
 
 
         // low temp
@@ -315,7 +318,7 @@ async function drawDailyGraph(sensorData) {
         // avg temp
         tempTraces.push({
             x: g.times, y: g.avg_temps, name: `${name} avg temp`,
-            mode: 'lines', line: {color: averageLineColour, width: 2},
+            mode: 'lines', line: {color: thisColour, width: 2},
         });
 
         // low humidity
@@ -391,7 +394,7 @@ async function drawHighResGraph(filtered) {
         groups[name].id = d.sensor.id;
     });
 
-    const colors = ['#12c35a', '#38BDF8', '#38BDF8', '#ef4444', '#8b5cf6'];
+    const colors = ['#12c35a', '#38BDF8', '#f59e0b', '#ef4444', '#8b5cf6'];
 
 
 
@@ -405,7 +408,7 @@ async function drawHighResGraph(filtered) {
     let ci = 0;
 
     for (const [name, g] of Object.entries(groups)) {
-        const col = colors[ci++ % colors.length];
+        const col = colors[(g.id - 1) % colors.length];
 
 
         minTemp = Math.min(minTemp, Math.min(...g.temps));
