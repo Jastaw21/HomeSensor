@@ -1,4 +1,4 @@
-const MOCK = true;
+const MOCK = false;
 const LAYOUT_BASE = {
     paper_bgcolor: 'transparent',
     plot_bgcolor: 'transparent',
