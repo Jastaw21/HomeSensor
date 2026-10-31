@@ -22,7 +22,7 @@ const LAYOUT_BASE = {
 };
 const PLOT_CONFIG = {responsive: true, displayModeBar: false};
 const key = new URLSearchParams(window.location.search).get('key');
-const DAILY_GRAPH_FILL_COLOUR = 'rgb(18 115 195 / 0.16)';
+const DAILY_GRAPH_FILL_COLOUR = 'rgba(18, 115, 195, 0.16)';
 
 const INITIAL_DAILY_AXIS_LIMITS = {
     tempMinAxis: 0.0,
@@ -341,7 +341,7 @@ async function drawDailyGraph(sensorData) {
         // avg humidity
         humidityTraces.push({
             x: g.times, y: g.avg_humids, name: `${name} avg humidity`,
-            mode: 'lines', line: {color: averageLineColour, width: 2}
+            mode: 'lines', line: {color: thisColour, width: 2}
         })
 
 
