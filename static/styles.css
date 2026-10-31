@@ -6,8 +6,8 @@
 
 body {
     font-family: arial, serif;
-    background: #06110B;
-    color: #EAFBF0;
+    background: #100f0f;
+    color: #eafbfa;
     padding: 24px;
 }
 
@@ -19,17 +19,17 @@ h1 {
 
 .subtitle {
     font-size: 13px;
-    color: #8BA99A;
+    color: #8ba8a9;
     margin-bottom: 24px;
 }
 
 .card {
 
-    background: #0B1F15;
+    background: #040000;
     border-radius: 6px;
     padding: 6px;
     margin-bottom: 6px;
-    border-color: #1E3A2B;
+    border-color: #0a1524;
     border-width: 2px;
     border-style: solid;
 }
@@ -38,7 +38,7 @@ h1 {
     font-size: 18px;
     font-weight: 600;
     margin-bottom: 6px;
-    color: #8BA99A;
+    color: #8b94a9;
     align-self: center;
 }
 
@@ -61,7 +61,7 @@ h1 {
     width: 100%;
 }
 .callout{
-    background: #102A1C;
+    background: #011427;
     border-radius: 6px;
     padding: 6px;
     margin-bottom: 6px;
@@ -70,11 +70,11 @@ h1 {
     border-style: solid;
     text-align: center;
     flex: 1;
-    color: #8BA99A;
+    color: #8b9fa9;
 }
 
 select, button {
-    background: #102A1C;
+    background: #101a2a;
     color: #F3FFF2;
     border: 1px solid #111111;
     border-radius: 8px;
@@ -84,12 +84,12 @@ select, button {
 }
 
 button:hover {
-    background: #163824;
+    background: #0a1537;
     color: #EAFBF0
 }
 
 select:hover {
-    background: #163824;
+    background: #17427f;
     color: #EAFBF0
 }
 

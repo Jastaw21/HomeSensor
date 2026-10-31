@@ -1,13 +1,13 @@
-const MOCK = false;
+const MOCK = true;
 const LAYOUT_BASE = {
     paper_bgcolor: 'transparent',
     plot_bgcolor: 'transparent',
     autosize: true,
-    font: {color: '#8BA99A', size: 12, family: 'Roboto, sans-serif'},
+    font: {color: '#8b95a9', size: 12, family: 'Roboto, sans-serif'},
     margin: {t: 10, r: 50, b: 50, l: 50},
-    xaxis: {gridcolor: '#1F4A4A', linecolor: '#1F4A4A', type: 'date'},
-    yaxis: {gridcolor: '#1F4A4A', linecolor: '#1F4A4A', range: [15, 25]},
-    yaxis2: {gridcolor: 'transparent', linecolor: '#1F4A4A', range: [20, 90]},
+    xaxis: {gridcolor: '#1f294a', linecolor: '#1f294a', type: 'date'},
+    yaxis: {gridcolor: '#1f294a', linecolor: '#1f294a', range: [15, 25]},
+    yaxis2: {gridcolor: 'transparent', linecolor: '#1f294a', range: [20, 90]},
     hovermode: 'x unified',
     legend: {
         orientation: 'h',
@@ -15,14 +15,14 @@ const LAYOUT_BASE = {
         xanchor: 'center',
         y: -0.2,
         yanchor: 'top',
-        bgcolor: '#06110B', font: {color: ' #8BA99A'}
+        bgcolor: '#060911', font: {color: ' #8BA99A'}
     },
     showlegend: true,
     dragmode: false,
 };
 const PLOT_CONFIG = {responsive: true, displayModeBar: false};
 const key = new URLSearchParams(window.location.search).get('key');
-const DAILY_GRAPH_FILL_COLOUR = 'rgba(18, 195, 90, 0.16)';
+const DAILY_GRAPH_FILL_COLOUR = 'rgb(18 115 195 / 0.16)';
 
 const INITIAL_DAILY_AXIS_LIMITS = {
     tempMinAxis: 0.0,
@@ -254,7 +254,7 @@ function updateSensorRanges(minTemp, g, maxTemp, minHumidity, maxHumidity) {
 // Updates the daily level summary graphs for temps and humid ranges
 async function drawDailyGraph(sensorData) {
 
-    const averageLineColour = '#12c35a';
+    const averageLineColour = '#1235c3';
 
     // apply the grouping by sensor level
     const groups = {};
@@ -284,7 +284,7 @@ async function drawDailyGraph(sensorData) {
 
     const tempTraces = [];
     const humidityTraces = [];
-    const colours = ['#12c35a', '#38BDF8', '#f59e0b', '#ef4444', '#8b5cf6'];
+    const colours = ['#125fc3', '#38BDF8', '#f59e0b', '#ef4444', '#8b5cf6'];
 
     for (const [name, g] of Object.entries(groups)) {
 
