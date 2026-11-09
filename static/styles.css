@@ -5,46 +5,47 @@
 }
 
 :root {
-    --bg      : #E5E2DE;
-    --surface : #F6F0E8;
-    --active  : #57599D;
-    --text    : #0A0D12;
-    --muted   : #6D6D6D;
-    --border  : #D8CEC1;
-    --radius  : 11px;
+    --bg            : #E5E2DE;
+    --surface       : #F6F0E8;
+    --active        : #57599D;
+    --text          : #0A0D12;
+    --muted         : #6D6D6D;
+    --border        : #D8CEC1;
+    --radius        : 11px;
+    --margin-bottom : 0.45rem;
 }
 
-/* @media (prefers-color-scheme: dark) { */
-/*     :root{ */
-/*         --bg      : #222020; */
-/*         --surface : #2E2C2C; */
-/*         --active  : #57599D; */
-/*         --text    : #0A0D12; */
-/*         --muted   : #6D6D6D; */
-/*         --border  : #CAC0B3; */
-/*     } */
-/* } */
-
+@media (prefers-color-scheme : dark) {
+    :root {
+        --bg      : #141619; /* Deep, soft dark slate background */
+        --surface : #1D2126; /* Slightly lighter charcoal for cards/inputs */
+        --active  : #6E71BA; /* A slightly brighter, richer indigo for better contrast on dark */
+        --text    : #F0F2F5; /* Clean off-white for primary text */
+        --muted   : #9BA1A6; /* Balanced mid-grey for subtitles and secondary text */
+        --border  : #2D333B; /* Subtle, clean border line */
+    }
+}
 
 body {
-    font-family : sans-serif, serif;
-    background  : var(--bg);
-    color       : var(--text);
-    padding     : 2.5rem;
-    display     : grid;
+    font-family    : sans-serif, serif;
+    background     : var(--bg);
+    color          : var(--text);
+    padding        : 2.5rem;
+    display        : flex;
+    flex-direction : column;
 }
 
 h1 {
     font-size     : 1.6rem;
     font-weight   : bolder;
-    margin-bottom : 0.2rem;
-    margin-left   : 0.2rem;
+    margin-bottom : var(--margin-bottom);
+
 }
 
 .subtitle {
     font-size     : 0.8rem;
     color         : var(--muted);
-    margin-bottom : 1rem;
+    margin-bottom : var(--margin-bottom);
 }
 
 .card {
@@ -53,7 +54,7 @@ h1 {
     color         : var(--text);
     border-radius : var(--radius);
     padding       : 0.65rem;
-    margin-bottom : 1rem;
+    margin-bottom : var(--margin-bottom);
     border-color  : var(--border);
     border-width  : 1px;
     border-style  : solid;
@@ -64,21 +65,25 @@ h1 {
     font-weight   : bold;
     margin-bottom : 6px;
     color         : var(--text);
-    align-self    : center;
+
 }
 
 .filter-row {
-    display       : flex;
-    gap           : 6px;
-    margin-bottom : 10px;
-    align-items   : center;
-    flex-wrap     : wrap;
+    display: flex;
+    gap: 0.4rem;
+    margin-bottom: var(--margin-bottom);
+    align-items: center;
+    flex-wrap: wrap;
+    width: 100%;
+    padding: 0;
+    margin-left: 0;
 }
 
 .record-container {
     display        : flex;
     flex-direction : row;
     gap            : 0.4rem;
+    margin-bottom  : var(--margin-bottom);
     border-color   : var(--border);
     align-items    : normal;
     flex-wrap      : nowrap;
@@ -87,7 +92,7 @@ h1 {
     background    : var(--surface);
     border-radius : var(--radius);
     padding       : 6px;
-    margin-bottom : 6px;
+    margin-bottom : 0;
     border-color  : var(--border);
     border-width  : 1px;
     border-style  : solid;
@@ -119,5 +124,5 @@ select:hover {
 #status {
     font-size   : 0.75rem;
     color       : var(--muted);
-    margin-left : 0.2rem;
+
 }

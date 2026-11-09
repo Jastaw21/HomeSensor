@@ -10,22 +10,22 @@
 </head>
 <body>
 <div>
-<h1>Chestnut Conditions</h1>
-<p class="subtitle" id="status">Loading...</p>
+    <h1>Chestnut Conditions</h1>
+    <p class="subtitle" id="status">Loading...</p>
 </div>
 
 <div class="filter-row">
-    <label for="sensor-filter"></label><select id="sensor-filter">
-    <option value="all">All sensors</option>
-</select>
-    <label for="range-filter"></label><select id="range-filter">
-    <option value="6">Last 6 Hours</option>
-    <option value="12">Last 12 Hours</option>
-    <option value="24" selected>Last 24 hours</option>
-    <option value="46" selected>Last 2 days</option>
-    <option value="168">Last 7 days</option>
-    <option value="0">All time</option>
-</select>
+    <select id="sensor-filter">
+        <option value="all">All sensors</option>
+    </select>
+    <select id="range-filter">
+        <option value="6">Last 6 Hours</option>
+        <option value="12">Last 12 Hours</option>
+        <option value="24" selected>Last 24 hours</option>
+        <option value="48" >Last 2 days</option>
+        <option value="168">Last 7 days</option>
+        <option value="0">All time</option>
+    </select>
     <button onclick="runPage()">Refresh</button>
 </div>
 
@@ -71,12 +71,12 @@
         <p id="record-low-value">This is a callout with a title and description.</p>
         <P id="record-lt-date">date here</P>
     </div>
-    <div class = "callout" id="record-high-h-container">
+    <div class="callout" id="record-high-h-container">
         <h2>High Humidity</h2>
         <p id="record-high-h-value">This is a callout with a title and description.</p>
         <P id="record-hh-date">date here</P>
     </div>
-    <div class = "callout" id="record-low-h-container">
+    <div class="callout" id="record-low-h-container">
         <h2>Low Humidity</h2>
         <p id="record-low-h-value">This is a callout with a title and description.</p>
         <P id="record-lh-date">date here</P>
