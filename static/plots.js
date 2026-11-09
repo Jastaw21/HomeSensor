@@ -1,28 +1,38 @@
 const MOCK = false;
+
+
+const bodyStyle = window.getComputedStyle(document.body);
+const bg = bodyStyle.getPropertyValue('--bg');
+const text = bodyStyle.getPropertyValue('--text');
+const muted = bodyStyle.getPropertyValue('--muted');
+const active = bodyStyle.getPropertyValue('--active');
+
+
+
 const LAYOUT_BASE = {
     paper_bgcolor: 'transparent',
     plot_bgcolor: 'transparent',
     autosize: true,
-    font: {color: '#8b95a9', size: 12, family: 'Roboto, sans-serif'},
+    font: {color: muted, size: 12, family: 'Roboto, sans-serif'},
     margin: {t: 10, r: 50, b: 50, l: 50},
-    xaxis: {gridcolor: '#1f294a', linecolor: '#1f294a', type: 'date'},
-    yaxis: {gridcolor: '#1f294a', linecolor: '#1f294a', range: [15, 25]},
-    yaxis2: {gridcolor: 'transparent', linecolor: '#1f294a', range: [20, 90]},
+    xaxis: {gridcolor: bg, linecolor: muted, type: 'date'},
+    yaxis: {gridcolor: bg, linecolor: muted, range: [15, 25]},
+    yaxis2: {gridcolor: 'transparent', linecolor: muted, range: [20, 90]},
     hovermode: 'x unified',
     legend: {
         orientation: 'h',
         x: 0.5,
         xanchor: 'center',
-        y: -0.2,
+        y: -0.15,
         yanchor: 'top',
-        bgcolor: '#060911', font: {color: ' #8BA99A'}
+        font: {color: text}
     },
     showlegend: true,
     dragmode: false,
 };
 const PLOT_CONFIG = {responsive: true, displayModeBar: false};
 const key = new URLSearchParams(window.location.search).get('key');
-const DAILY_GRAPH_FILL_COLOUR = 'rgba(18, 115, 195, 0.16)';
+const DAILY_GRAPH_FILL_COLOUR = 'rgba(14 122 212 0.16)';
 
 const INITIAL_DAILY_AXIS_LIMITS = {
     tempMinAxis: 0.0,
