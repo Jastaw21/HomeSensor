@@ -14,9 +14,9 @@ const LAYOUT_BASE = {
     autosize: true,
     font: {color: muted, size: 12, family: 'Roboto, sans-serif'},
     margin: {t: 25, r: 25, b: 25, l: 25},
-    xaxis: {gridcolor: 'transparent', linecolor: 'transparent', type: 'date'},
-    yaxis: {gridcolor: 'transparent', linecolor: 'transparent', range: [15, 25]},
-    yaxis2: {gridcolor: 'transparent', linecolor: 'transparent', range: [20, 90]},
+    xaxis: {gridcolor: 'transparent', linecolor: border, type: 'date'},
+    yaxis: {gridcolor:  border, linecolor: border, range: [15, 25]},
+    yaxis2: {gridcolor: 'transparent', linecolor: border, range: [20, 90]},
     hovermode: 'x unified',
     legend: {
         orientation: 'h',

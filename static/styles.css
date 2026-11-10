@@ -13,6 +13,9 @@
     --border        : #D8CEC1;
     --radius        : 11px;
     --margin-bottom : 0.45rem;
+
+    --high : #BB0D0D;
+    --low : #043ED1;
 }
 
 @media (prefers-color-scheme : dark) {
@@ -42,24 +45,56 @@ h1 {
 
 }
 
+.flex-textbox{
+    background: var(--surface);
+    display: flex;
+    flex: 1;
+    gap: 1rem;
+    justify-content: space-around;
+    padding: 1rem;
+    margin-bottom : var(--margin-bottom);
+    border-radius : var(--radius);
+    border-color  : var(--border);
+    border-width  : 1px;
+    border-style  : solid;
+}
+
+.flex-textbox .high{
+    color: var(--high);
+}
+
+.flex-textbox .low{
+    color: var(--low);
+}
+
+.flex-textbox h1{
+    font-size: 1.1rem;
+}
+
+.flex-textbox p{
+    font-size: 0.75rem;
+}
+
+
+
 .subtitle {
     font-size     : 0.8rem;
     color         : var(--muted);
     margin-bottom : var(--margin-bottom);
 }
 
+
 .card {
 
     background    : var(--surface);
     color         : var(--text);
-    border-radius : var(--radius);
-    padding       : 0.1rem;
+    padding       : 0.6rem;
     margin-bottom : var(--margin-bottom);
+    border-radius : var(--radius);
     border-color  : var(--border);
     border-width  : 1px;
     border-style  : solid;
 }
-
 .card h2 {
     font-size     : 18px;
     font-weight   : bold;
