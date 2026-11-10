@@ -5,8 +5,7 @@ const bodyStyle = window.getComputedStyle(document.body);
 const bg = bodyStyle.getPropertyValue('--bg');
 const text = bodyStyle.getPropertyValue('--text');
 const muted = bodyStyle.getPropertyValue('--muted');
-const active = bodyStyle.getPropertyValue('--active');
-
+const border = bodyStyle.getPropertyValue('--border');
 
 
 const LAYOUT_BASE = {
@@ -14,10 +13,10 @@ const LAYOUT_BASE = {
     plot_bgcolor: 'transparent',
     autosize: true,
     font: {color: muted, size: 12, family: 'Roboto, sans-serif'},
-    margin: {t: 10, r: 50, b: 50, l: 50},
-    xaxis: {gridcolor: bg, linecolor: muted, type: 'date'},
-    yaxis: {gridcolor: bg, linecolor: muted, range: [15, 25]},
-    yaxis2: {gridcolor: 'transparent', linecolor: muted, range: [20, 90]},
+    margin: {t: 25, r: 25, b: 25, l: 25},
+    xaxis: {gridcolor: 'transparent', linecolor: 'transparent', type: 'date'},
+    yaxis: {gridcolor: 'transparent', linecolor: 'transparent', range: [15, 25]},
+    yaxis2: {gridcolor: 'transparent', linecolor: 'transparent', range: [20, 90]},
     hovermode: 'x unified',
     legend: {
         orientation: 'h',
@@ -25,7 +24,7 @@ const LAYOUT_BASE = {
         xanchor: 'center',
         y: -0.15,
         yanchor: 'top',
-        font: {color: text}
+        font: {color: muted}
     },
     showlegend: true,
     dragmode: false,
@@ -264,7 +263,7 @@ function updateSensorRanges(minTemp, g, maxTemp, minHumidity, maxHumidity) {
 // Updates the daily level summary graphs for temps and humid ranges
 async function drawDailyGraph(sensorData) {
 
-    const averageLineColour = '#1235c3';
+    const averageLineColour = '#1235C3';
 
     // apply the grouping by sensor level
     const groups = {};
@@ -294,7 +293,7 @@ async function drawDailyGraph(sensorData) {
 
     const tempTraces = [];
     const humidityTraces = [];
-    const colours = ['#125fc3', '#38BDF8', '#f59e0b', '#ef4444', '#8b5cf6'];
+    const colours = ['#125FC3', '#38BDF8', '#F59E0B', '#EF4444', '#8B5CF6'];
 
     for (const [name, g] of Object.entries(groups)) {
 
@@ -372,7 +371,7 @@ async function drawDailyGraph(sensorData) {
                 tickformat: '%H:%M\n%d %b',
                 hoverformat: '%d %b %H:%M'
             },
-        yaxis: {...LAYOUT_BASE.yaxis, title: '°C', range: [tempMinAxis, tempMaxAxis]},
+        yaxis: {...LAYOUT_BASE.yaxis, title: {text:''}, range: [tempMinAxis, tempMaxAxis]},
     }
 
     const humidsGraphLayout = {
@@ -383,7 +382,7 @@ async function drawDailyGraph(sensorData) {
                 tickformat: '%H:%M\n%d %b',
                 hoverformat: '%d %b %H:%M'
             },
-        yaxis: {...LAYOUT_BASE.yaxis, title: '%', range: [humidityMinAxis, humidityMaxAxis]},
+        yaxis: {...LAYOUT_BASE.yaxis, title: {text:''}, range: [humidityMinAxis, humidityMaxAxis]},
     }
 
     // rebuil the grapha
@@ -404,8 +403,7 @@ async function drawHighResGraph(filtered) {
         groups[name].id = d.sensor.id;
     });
 
-    const colors = ['#12c35a', '#38BDF8', '#f59e0b', '#ef4444', '#8b5cf6'];
-
+    const colors = ['#12C35A', '#38BDF8', '#F59E0B', '#EF4444', '#8B5CF6'];
 
 
     const traces = [];
@@ -452,13 +450,14 @@ async function drawHighResGraph(filtered) {
             tickformat: '%H:%M\n%d %b',
             hoverformat: '%d %b %H:%M'
         },
-        yaxis: {...LAYOUT_BASE.yaxis, title: '°C', range: [tempMinAxis, tempMaxAxis]},
+        yaxis: {...LAYOUT_BASE.yaxis, title: {text:''}, range: [tempMinAxis, tempMaxAxis]},
         yaxis2: {
             ...LAYOUT_BASE.yaxis2,
-            title: '%',
+            title: {text:''},
             overlaying: 'y',
             side: 'right',
             range: [humidityMinAxis, humidityMaxAxis]
+
         },
     };
 

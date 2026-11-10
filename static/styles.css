@@ -20,7 +20,7 @@
         --bg      : #141619; /* Deep, soft dark slate background */
         --surface : #1D2126; /* Slightly lighter charcoal for cards/inputs */
         --active  : #6E71BA; /* A slightly brighter, richer indigo for better contrast on dark */
-        --text    : #F0F2F5; /* Clean off-white for primary text */
+        --text    : #DBDCDF; /* Clean off-white for primary text */
         --muted   : #9BA1A6; /* Balanced mid-grey for subtitles and secondary text */
         --border  : #2D333B; /* Subtle, clean border line */
     }
@@ -53,7 +53,7 @@ h1 {
     background    : var(--surface);
     color         : var(--text);
     border-radius : var(--radius);
-    padding       : 0.65rem;
+    padding       : 0.1rem;
     margin-bottom : var(--margin-bottom);
     border-color  : var(--border);
     border-width  : 1px;
