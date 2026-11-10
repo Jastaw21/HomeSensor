@@ -33,7 +33,7 @@ body {
     font-family    : sans-serif, serif;
     background     : var(--bg);
     color          : var(--text);
-    padding        : 2.5rem;
+    padding        : 0.5rem;
     display        : flex;
     flex-direction : column;
 }
@@ -106,7 +106,7 @@ h1 {
     display: flex;
     gap: 0.4rem;
     margin-bottom: var(--margin-bottom);
-    align-items: center;
+    justify-content:space-evenly ;
     flex-wrap: wrap;
     width: 100%;
     padding: 0;
@@ -144,7 +144,11 @@ select, button {
     font-size     : 0.75rem;
     cursor        : pointer;
 }
-
+.filter-row select,
+.filter-row button {
+    flex: 1;
+    min-width: 0;
+}
 button:hover {
     background : var(--active);
     color      : var(--surface);
