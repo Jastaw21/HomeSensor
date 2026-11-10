@@ -1,3 +1,4 @@
+
 * {
     box-sizing : border-box;
     margin     : 0;
@@ -14,67 +15,42 @@
     --radius        : 11px;
     --margin-bottom : 0.45rem;
 
-    --high : #BB410D;
-    --low : #043ED1;
+    --high          : #BB410D;
+    --low           : #043ED1;
 }
 
 @media (prefers-color-scheme : dark) {
     :root {
-        --bg      : #141619; /* Deep, soft dark slate background */
-        --surface : #1D2126; /* Slightly lighter charcoal for cards/inputs */
-        --active  : #6E71BA; /* A slightly brighter, richer indigo for better contrast on dark */
-        --text    : #DBDCDF; /* Clean off-white for primary text */
-        --muted   : #9BA1A6; /* Balanced mid-grey for subtitles and secondary text */
-        --border  : #2D333B; /* Subtle, clean border line */
+        --bg      : #141619;
+        --surface : #1D2126;
+        --active  : #6E71BA;
+        --text    : #DBDCDF;
+        --muted   : #9BA1A6;
+        --border  : #2D333B;
+
+        /* Brighter colours for dark mode */
+        --high    : #E58A55;
+        --low     : #579DCE;
     }
 }
+
+/* General layout */
 
 body {
     font-family    : sans-serif, serif;
     background     : var(--bg);
     color          : var(--text);
-    padding        : 0.5rem;
+    padding        : clamp(0.75rem, 3vw, 2.5rem);
     display        : flex;
     flex-direction : column;
+    min-width      : 0;
 }
 
 h1 {
     font-size     : 1.6rem;
     font-weight   : bolder;
     margin-bottom : var(--margin-bottom);
-
 }
-
-.flex-textbox{
-    background: var(--surface);
-    display: flex;
-    flex: 1;
-    justify-content: space-around;
-    padding: 1rem;
-    margin-bottom : var(--margin-bottom);
-    border-radius : var(--radius);
-    border-color  : var(--border);
-    border-width  : 1px;
-    border-style  : solid;
-}
-
-.flex-textbox .high{
-    color: var(--high);
-}
-
-.flex-textbox .low{
-    color: var(--low);
-}
-
-.flex-textbox h1{
-    font-size: 1.1rem;
-}
-
-.flex-textbox p{
-    font-size: 0.75rem;
-}
-
-
 
 .subtitle {
     font-size     : 0.8rem;
@@ -82,57 +58,82 @@ h1 {
     margin-bottom : var(--margin-bottom);
 }
 
+/* Shared textbox styling */
+
+.textbox {
+    background    : var(--surface);
+    flex          : 1;
+    padding       : 1rem;
+    margin-bottom : var(--margin-bottom);
+    border        : 1px solid var(--border);
+    border-radius : var(--radius);
+    min-width     : 0;
+}
+
+.textbox h1 {
+    font-size : 1.1rem;
+}
+
+.textbox p {
+    font-size : 0.75rem;
+}
+
+/* Flex layout */
+
+.flex-textbox {
+    display         : flex;
+    justify-content : space-around;
+    align-items     : center;
+    gap             : 1rem;
+    text-align      : center;
+}
+
+/* Grid layout */
+
+.flex-textbox-grid {
+    display               : grid;
+    grid-template-columns : repeat(2, minmax(0, 1fr));
+    gap                   : 1rem;
+}
+
+/* High / low colours */
+
+.high {
+    color : var(--high);
+}
+
+.low {
+    color : var(--low);
+}
+
+/* Chart cards */
 
 .card {
-
     background    : var(--surface);
     color         : var(--text);
     padding       : 0.6rem;
     margin-bottom : var(--margin-bottom);
+    border        : 1px solid var(--border);
     border-radius : var(--radius);
-    border-color  : var(--border);
-    border-width  : 1px;
-    border-style  : solid;
+    min-width     : 0;
+    overflow      : hidden;
 }
+
 .card h2 {
     font-size     : 18px;
     font-weight   : bold;
     margin-bottom : 6px;
     color         : var(--text);
-
 }
+
+/* Filters */
 
 .filter-row {
-    display: flex;
-    gap: 0.4rem;
-    margin-bottom: var(--margin-bottom);
-    justify-content:space-evenly ;
-    flex-wrap: wrap;
-    width: 100%;
-    padding: 0;
-    margin-left: 0;
-}
-
-.record-container {
-    display        : flex;
-    flex-direction : row;
-    gap            : 0.4rem;
-    margin-bottom  : var(--margin-bottom);
-    border-color   : var(--border);
-    align-items    : normal;
-    flex-wrap      : nowrap;
-}
-.callout {
-    background    : var(--surface);
-    border-radius : var(--radius);
-    padding       : 6px;
-    margin-bottom : 0;
-    border-color  : var(--border);
-    border-width  : 1px;
-    border-style  : solid;
-    text-align    : center;
-    flex          : 1;
-    color         : var(--text);
+    display       : flex;
+    gap           : 0.4rem;
+    margin-bottom : var(--margin-bottom);
+    flex-wrap     : wrap;
+    width         : 100%;
 }
 
 select, button {
@@ -140,27 +141,27 @@ select, button {
     color         : var(--muted);
     border        : 1px solid var(--border);
     border-radius : var(--radius);
-    padding       : 0.4rem 0.4rem;
+    padding       : 0.4rem;
     font-size     : 0.75rem;
     cursor        : pointer;
 }
+
 .filter-row select,
 .filter-row button {
-    flex: 1;
-    min-width: 0;
-}
-button:hover {
-    background : var(--active);
-    color      : var(--surface);
+    flex      : 1;
+    min-width : 0;
 }
 
+button:hover,
 select:hover {
     background : var(--active);
     color      : var(--surface);
 }
 
-#status {
-    font-size   : 0.75rem;
-    color       : var(--muted);
+/* Status */
 
+#status {
+    font-size : 0.75rem;
+    color     : var(--muted);
 }
+

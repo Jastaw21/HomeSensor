@@ -9,15 +9,18 @@
 
 </head>
 <body>
+
 <div>
     <h1>Home Conditions</h1>
     <p class="subtitle" id="status">Loading...</p>
 </div>
 
+<!-- Filters -->
 <div class="filter-row">
     <select id="sensor-filter">
         <option value="all">All sensors</option>
     </select>
+
     <select id="range-filter">
         <option value="6">Last 6 Hours</option>
         <option value="12">Last 12 Hours</option>
@@ -26,16 +29,29 @@
         <option value="168">Last 7 days</option>
         <option value="0">All time</option>
     </select>
+
     <button onclick="runPage()">Refresh</button>
 </div>
 
-<div class="flex-textbox">
-    <h1 id="timestamp-value">Time</h1>
-    <h1 id="temp-value">Temp</h1>
-    <h1 id="humidity-value">Humidity</h1>
+<!-- Current readings -->
+<div class="textbox flex-textbox">
+    <div>
+        <h1>Time</h1>
+        <p id="timestamp-value"></p>
+    </div>
+
+    <div>
+        <h1>Temperature</h1>
+        <p id="temp-value"></p>
+    </div>
+
+    <div>
+        <h1>Humidity</h1>
+        <p id="humidity-value"></p>
+    </div>
 </div>
 
-
+<!-- Charts -->
 <div class="card">
     <h2>History</h2>
     <div id="chart-overview"></div>
@@ -51,29 +67,35 @@
     <div id="daily-humidity-graph"></div>
 </div>
 
-<div class="flex-textbox">
+<!-- Historical records -->
+<div class="textbox flex-textbox-grid">
+
     <div id="record-high-container">
         <h1 class="high">High Temp</h1>
-        <p id="record-high-value">This is a flex-textbox with a title and description.</p>
-        <P id="record-ht-date">date here</P>
+        <p id="record-high-value"></p>
+        <p id="record-ht-date"></p>
     </div>
+
     <div id="record-low-container">
         <h1 class="low">Low Temp</h1>
-        <p id="record-low-value">This is a flex-textbox with a title and description.</p>
-        <P id="record-lt-date">date here</P>
+        <p id="record-low-value"></p>
+        <p id="record-lt-date"></p>
     </div>
+
     <div id="record-high-h-container">
-        <h1>High Humidity</h1>
-        <p id="record-high-h-value">This is a flex-textbox with a title and description.</p>
-        <P id="record-hh-date">date here</P>
+        <h1 class="high">High Humidity</h1>
+        <p id="record-high-h-value"></p>
+        <p id="record-hh-date"></p>
     </div>
+
     <div id="record-low-h-container">
-        <h1>Low Humidity</h1>
-        <p id="record-low-h-value">This is a flex-textbox with a title and description.</p>
-        <P id="record-lh-date">date here</P>
+        <h1 class="low">Low Humidity</h1>
+        <p id="record-low-h-value"></p>
+        <p id="record-lh-date"></p>
     </div>
 
 </div>
+
 
 
 <script type="module" src="/static/plots.js"></script>
