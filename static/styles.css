@@ -15,7 +15,7 @@
     --radius        : 11px;
     --margin-bottom : 0.45rem;
 
-    --high          : #BB410D;
+    --high          : #C25239;
     --low           : #043ED1;
 }
 
@@ -29,7 +29,7 @@
         --border  : #2D333B;
 
         /* Brighter colours for dark mode */
-        --high    : #E58A55;
+
         --low     : #579DCE;
     }
 }

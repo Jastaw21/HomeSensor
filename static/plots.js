@@ -113,58 +113,89 @@ function parseUtcTimestamp(timestamp) {
 function generateMockHighResData() {
     const now = Date.now();
     const data = [];
-    for (let i = 200; i >= 0; i--) {
-        data.push({
-            id: i,
-            temp: 20 + Math.sin(i / 20) * 4 + Math.random(),
-            humidity: 55 + Math.cos(i / 15) * 8 + Math.random(),
-            timestamp: new Date(now - i * 30 * 60000).toISOString(),
-            sensor_id: 1,
-            sensor: "living room"
-        });
-    }
+    const sensors = [
+        { id: 1, name: "living room" },
+        { id: 2, name: "kitchen" },
+        { id: 3, name: "bedroom" }
+    ];
+
+    sensors.forEach(s => {
+        for (let i = 200; i >= 0; i--) {
+            const baseTemp = 20 + (s.id * 2);
+            const baseHumid = 45 + (s.id * 5);
+            data.push({
+                id: i + (s.id * 1000),
+                temp: baseTemp + Math.sin(i / 20) * 4 + Math.random(),
+                humidity: baseHumid + Math.cos(i / 15) * 8 + Math.random(),
+                timestamp: new Date(now - i * 5 * 60000).toISOString(),
+                sensor_id: s.id,
+                sensor: s
+            });
+        }
+    });
     return data;
 }
 
 function generateMockDailyData() {
-    console.log("generating mock data");
     const now = Date.now();
     const data = [];
-    for (let i = 24; i >= 0; i--) {
-        data.push({
-            id: i,
-            temp_avg: 20 + Math.sin(i / 20) * 4 + Math.random(),
-            temp_max: 26 + Math.sin(i / 20) * 4 + Math.random(),
-            temp_min: 16 + Math.sin(i / 20) * 4 + Math.random(),
-            humidity_avg: 55 + Math.cos(i / 15) * 8 + Math.random(),
-            humidity_max: 65 + Math.cos(i / 15) * 8 + Math.random(),
-            humidity_min: 45 + Math.cos(i / 15) * 8 + Math.random(),
-            timestamp: new Date(now - i * (3600000 * 24)).toISOString(),
-            sensor_id: 1,
-            sensor: "living room"
-        })
-    }
-    console.log(data);
-    for (let i = 24; i >= 0; i--) {
-        data.push({
-            id: i,
-            temp_avg: 20 + Math.sin(i / 20) * 4 + Math.random(),
-            temp_max: 26 + Math.sin(i / 20) * 4 + Math.random(),
-            temp_min: 16 + Math.sin(i / 20) * 4 + Math.random(),
-            humidity_avg: 55 + Math.cos(i / 15) * 8 + Math.random(),
-            humidity_max: 65 + Math.cos(i / 15) * 8 + Math.random(),
-            humidity_min: 45 + Math.cos(i / 15) * 8 + Math.random(),
-            timestamp: new Date(now - i * (3600000 * 24)).toISOString(),
-            sensor_id: 2,
-            sensor: "front-room"
-        })
-    }
+    const sensors = [
+        { id: 1, name: "living room" },
+        { id: 2, name: "kitchen" },
+        { id: 3, name: "bedroom" }
+    ];
+
+    sensors.forEach(s => {
+        for (let i = 30; i >= 0; i--) {
+            const baseTemp = 20 + (s.id * 2);
+            const baseHumid = 45 + (s.id * 5);
+            data.push({
+                id: i + (s.id * 1000),
+                temp_avg: baseTemp + Math.sin(i / 10) * 2 + Math.random(),
+                temp_max: baseTemp + 5 + Math.sin(i / 10) * 2 + Math.random(),
+                temp_min: baseTemp - 5 + Math.sin(i / 10) * 2 + Math.random(),
+                humidity_avg: baseHumid + Math.cos(i / 8) * 4 + Math.random(),
+                humidity_max: baseHumid + 10 + Math.cos(i / 8) * 4 + Math.random(),
+                humidity_min: baseHumid - 10 + Math.cos(i / 8) * 4 + Math.random(),
+                timestamp: new Date(now - i * (3600000 * 24)).toISOString(),
+                sensor_id: s.id,
+                sensor: s
+            });
+        }
+    });
 
     return data;
 }
 
+function generateMockRecordData() {
+    const now = Date.now();
+    return [
+        {
+            value: 28.5,
+            timestamp: new Date(now - 100000000).toISOString(),
+            type: "high_temp"
+        },
+        {
+            value: 15.2,
+            timestamp: new Date(now - 200000000).toISOString(),
+            type: "low_temp"
+        },
+        {
+            value: 82.1,
+            timestamp: new Date(now - 150000000).toISOString(),
+            type: "high_humidity"
+        },
+        {
+            value: 32.4,
+            timestamp: new Date(now - 250000000).toISOString(),
+            type: "low_humidity"
+        }
+    ];
+}
+
 // Data getting
 async function fetchRecordData() {
+    if (MOCK) return generateMockRecordData();
     return apiFetch('/records');
 }
 
@@ -300,7 +331,7 @@ async function drawDailyGraph(sensorData) {
         // low temp
         tempTraces.push({
             x: times, y: minT, name: `${name} min C`,
-            mode: 'lines', line: { color: '#000', width: 0 },
+            mode: 'lines', line: { color: '#000', width: 0.5},
             showlegend: false,
             hoverinfo: 'skip'
         });
@@ -308,7 +339,7 @@ async function drawDailyGraph(sensorData) {
         // high temp
         tempTraces.push({
             x: times, y: maxT, name: `${name} max C`,
-            mode: 'lines', line: { color: '#000', width: 0 },
+            mode: 'lines', line: { color: '#000', width: 0.5 },
             fill: 'tonexty',
             fillcolor: DAILY_GRAPH_FILL_COLOUR,
             showlegend: false,
@@ -323,14 +354,14 @@ async function drawDailyGraph(sensorData) {
         // low humidity
         humidityTraces.push({
             x: times, y: minH, name: `${name} min %`,
-            mode: 'lines', line: { color: '#000', width: 0 },
+            mode: 'lines', line: { color: '#000', width: 0.5 },
             showlegend: false,
             hoverinfo: 'skip'
         });
         // high humidity
         humidityTraces.push({
             x: times, y: maxH, name: `${name} max %`,
-            mode: 'lines', line: { color: '#000', width: 0 },
+            mode: 'lines', line: { color: '#000', width: 0.5 },
             fill: 'tonexty',
             fillcolor: DAILY_GRAPH_FILL_COLOUR,
             showlegend: false,
