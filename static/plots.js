@@ -1,9 +1,7 @@
-const MOCK = false;
+const MOCK = true;
 
 
 const bodyStyle = window.getComputedStyle(document.body);
-const bg = bodyStyle.getPropertyValue('--bg');
-const text = bodyStyle.getPropertyValue('--text');
 const muted = bodyStyle.getPropertyValue('--muted');
 const border = bodyStyle.getPropertyValue('--border');
 
@@ -31,16 +29,58 @@ const LAYOUT_BASE = {
 };
 const PLOT_CONFIG = {responsive: true, displayModeBar: false};
 const key = new URLSearchParams(window.location.search).get('key');
-const DAILY_GRAPH_FILL_COLOUR = 'rgba(14 122 212 0.16)';
+const COLORS = ['#125FC3', '#38BDF8', '#F59E0B', '#EF4444', '#8B5CF6', '#12C35A'];
+const DAILY_GRAPH_FILL_COLOUR = 'rgba(14, 122, 212, 0.16)';
 
 const INITIAL_DAILY_AXIS_LIMITS = {
-    tempMinAxis: 0.0,
-    tempMaxAxis: 40.0,
-    humidityMinAxis: 101.0,
-    humidityMaxAxis: 0.0
+    minTemp: 40.0,
+    maxTemp: 0.0,
+    minHumidity: 101.0,
+    maxHumidity: 0.0
 };
 
 // Helpers
+async function apiFetch(url, params = {}) {
+    const queryString = new URLSearchParams(params).toString();
+    const fullUrl = queryString ? `${url}?${queryString}` : url;
+    const res = await fetch(fullUrl, { headers: { 'X-API-Key': key } });
+    if (!res.ok) throw new Error(`API error ${res.status}: ${res.statusText}`);
+    return res.json();
+}
+
+function getSensorName(sensor) {
+    return sensor.name || `Sensor ${sensor.id}`;
+}
+
+function groupDataBySensor(data) {
+    return data.reduce((acc, d) => {
+        const name = getSensorName(d.sensor);
+        if (!acc[name]) acc[name] = { id: d.sensor.id, data: [] };
+        acc[name].data.push(d);
+        return acc;
+    }, {});
+}
+
+function getLayout(overrides = {}) {
+    const layout = JSON.parse(JSON.stringify(LAYOUT_BASE));
+    const deepMerge = (target, source) => {
+        for (const key in source) {
+            if (source[key] instanceof Object && key in target) {
+                deepMerge(target[key], source[key]);
+            } else {
+                target[key] = source[key];
+            }
+        }
+    };
+    deepMerge(layout, overrides);
+    return layout;
+}
+
+const COMMON_XAXIS = {
+    tickformat: '%H:%M\n%d %b',
+    hoverformat: '%d %b %H:%M'
+};
+
 function redrawPlot(elementName, traces, layout) {
     Plotly.purge(elementName);
     Plotly.newPlot(elementName, traces, layout, PLOT_CONFIG);
@@ -125,40 +165,27 @@ function generateMockDailyData() {
 
 // Data getting
 async function fetchRecordData() {
-    const res = await fetch(`/records`, {
-        headers: {'X-API-Key': key}
-    });
-
-    if (!res.ok) {
-        throw new Error(`Failed to fetch record: ${res.status}`);
-    }
-
-    return await res.json();
+    return apiFetch('/records');
 }
 
 async function fetchDailyData() {
     let data;
     if (MOCK) {
         data = generateMockDailyData();
-        console.log(data);
     } else {
         document.getElementById('status').textContent = 'Loading...';
-        const res = await fetch('/data/daily', {headers: {'X-API-Key': key}});
-        data = await res.json();
+        data = await apiFetch('/data/daily');
     }
 
     const sensorFilter = document.getElementById('sensor-filter').value;
-
-
-    // Populate sensor dropdown
     updateSensorFilter(data);
 
     return sensorFilter === 'all' ? data
-        : data.filter(d => (d.sensor.name || `Sensor ${d.sensor.id}`) === sensorFilter);
+        : data.filter(d => getSensorName(d.sensor) === sensorFilter);
 }
 
 function updateSensorFilter(sensorData) {
-    const sensors = [...new Set(sensorData.map(d => d.sensor.name || `Sensor ${d.sensor.id}`))];
+    const sensors = [...new Set(sensorData.map(d => getSensorName(d.sensor)))];
     const sel = document.getElementById('sensor-filter');
     const current = sel.value;
     sel.innerHTML = '<option value="all">All sensors</option>';
@@ -177,9 +204,7 @@ async function fetchHighResData() {
         data = generateMockHighResData();
     } else {
         document.getElementById('status').textContent = 'Loading...';
-        const params = new URLSearchParams({hours: '8735'});
-        const res = await fetch(`/data/consol?${params.toString()}`, {headers: {'X-API-Key': key}});
-        data = await res.json();
+        data = await apiFetch('/data/consol', { hours: '8735' });
     }
 
     const hours = parseInt(document.getElementById('range-filter').value);
@@ -189,13 +214,10 @@ async function fetchHighResData() {
     }
 
     const sensorFilter = document.getElementById('sensor-filter').value;
-
-
-    // Populate sensor dropdown
     updateSensorFilter(data);
 
     return sensorFilter === 'all' ? data
-        : data.filter(d => (d.sensor.name || `Sensor ${d.sensor.id}`) === sensorFilter);
+        : data.filter(d => getSensorName(d.sensor) === sensorFilter);
 }
 
 // page updaters
@@ -251,71 +273,42 @@ function updateRecordsCards(highestTemp, lowestTemp, highestHumidity, lowestHumi
         lowestHumidity?.timestamp ? parseUtcTimestamp(lowestHumidity.timestamp).toLocaleString() : 'N/A';
 }
 
-// updates the min and max values seen so far when building the daily graphs
-function updateSensorRanges(minTemp, g, maxTemp, minHumidity, maxHumidity) {
-    minTemp = Math.min(minTemp, Math.min(...g.min_temps));
-    maxTemp = Math.max(maxTemp, Math.max(...g.max_temps));
-    minHumidity = Math.min(minHumidity, Math.min(...g.min_humids));
-    maxHumidity = Math.max(maxHumidity, Math.max(...g.max_humids));
-    return {minTemp, maxTemp, minHumidity, maxHumidity};
-}
-
 // Updates the daily level summary graphs for temps and humid ranges
 async function drawDailyGraph(sensorData) {
-// apply the grouping by sensor level
-    const groups = {};
-    sensorData.forEach(d => {
-        const name = d.sensor.name || 'Sensor ' + d.sensor.id;
-        if (!groups[name]) groups[name] = {
-            times: [],
-            min_temps: [],
-            max_temps: [],
-            avg_temps: [],
-            min_humids: [],
-            max_humids: [],
-            avg_humids: []
-        };
-        groups[name].times.push(parseUtcTimestamp(d.timestamp));
-        groups[name].min_temps.push(d.temp_min);
-        groups[name].max_temps.push(d.temp_max);
-        groups[name].avg_temps.push(d.temp_avg);
-        groups[name].min_humids.push(d.humidity_min);
-        groups[name].max_humids.push(d.humidity_max);
-        groups[name].avg_humids.push(d.humidity_avg);
-    })
-
-
-    // initial axis limits - should exceed any actual reading on both sides
-    let {minTemp, maxTemp, minHumidity, maxHumidity} = INITIAL_DAILY_AXIS_LIMITS;
+    const groups = groupDataBySensor(sensorData);
+    let { minTemp, maxTemp, minHumidity, maxHumidity } = INITIAL_DAILY_AXIS_LIMITS;
 
     const tempTraces = [];
     const humidityTraces = [];
-    const colours = ['#125FC3', '#38BDF8', '#F59E0B', '#EF4444', '#8B5CF6'];
 
     for (const [name, g] of Object.entries(groups)) {
+        const times = g.data.map(d => parseUtcTimestamp(d.timestamp));
+        const minT = g.data.map(d => d.temp_min);
+        const maxT = g.data.map(d => d.temp_max);
+        const avgT = g.data.map(d => d.temp_avg);
+        const minH = g.data.map(d => d.humidity_min);
+        const maxH = g.data.map(d => d.humidity_max);
+        const avgH = g.data.map(d => d.humidity_avg);
 
-        // update the most extreme values seen so far
-        const sensorRanges = updateSensorRanges(minTemp, g, maxTemp, minHumidity, maxHumidity);
-        minTemp = sensorRanges.minTemp;
-        maxTemp = sensorRanges.maxTemp;
-        minHumidity = sensorRanges.minHumidity;
-        maxHumidity = sensorRanges.maxHumidity;
+        minTemp = Math.min(minTemp, ...minT);
+        maxTemp = Math.max(maxTemp, ...maxT);
+        minHumidity = Math.min(minHumidity, ...minH);
+        maxHumidity = Math.max(maxHumidity, ...maxH);
 
-        const thisColour = colours[(g.id - 1) % colours.length];
-
+        const thisColour = COLORS[(g.id - 1) % COLORS.length];
 
         // low temp
         tempTraces.push({
-            x: g.times, y: g.min_temps, name: `${name} min C`,
-            mode: 'lines', line: {color: '#000', width: 0},
+            x: times, y: minT, name: `${name} min C`,
+            mode: 'lines', line: { color: '#000', width: 0 },
             showlegend: false,
             hoverinfo: 'skip'
         });
 
         // high temp
         tempTraces.push({
-            x: g.times, y: g.max_temps, name: `${name} max C`,
-            mode: 'lines', line: {color: '#000', width: 0},
+            x: times, y: maxT, name: `${name} max C`,
+            mode: 'lines', line: { color: '#000', width: 0 },
             fill: 'tonexty',
             fillcolor: DAILY_GRAPH_FILL_COLOUR,
             showlegend: false,
@@ -323,21 +316,21 @@ async function drawDailyGraph(sensorData) {
         });
         // avg temp
         tempTraces.push({
-            x: g.times, y: g.avg_temps, name: `${name} avg temp`,
-            mode: 'lines', line: {color: thisColour, width: 2},
+            x: times, y: avgT, name: `${name} avg temp`,
+            mode: 'lines', line: { color: thisColour, width: 2 },
         });
 
         // low humidity
         humidityTraces.push({
-            x: g.times, y: g.min_humids, name: `${name} min %`,
-            mode: 'lines', line: {color: '#000', width: 0},
+            x: times, y: minH, name: `${name} min %`,
+            mode: 'lines', line: { color: '#000', width: 0 },
             showlegend: false,
             hoverinfo: 'skip'
         });
         // high humidity
         humidityTraces.push({
-            x: g.times, y: g.max_humids, name: `${name} max %`,
-            mode: 'lines', line: {color: '#000', width: 0},
+            x: times, y: maxH, name: `${name} max %`,
+            mode: 'lines', line: { color: '#000', width: 0 },
             fill: 'tonexty',
             fillcolor: DAILY_GRAPH_FILL_COLOUR,
             showlegend: false,
@@ -346,117 +339,67 @@ async function drawDailyGraph(sensorData) {
 
         // avg humidity
         humidityTraces.push({
-            x: g.times, y: g.avg_humids, name: `${name} avg humidity`,
-            mode: 'lines', line: {color: thisColour, width: 2}
+            x: times, y: avgH, name: `${name} avg humidity`,
+            mode: 'lines', line: { color: thisColour, width: 2 }
         })
-
-
     }
 
-    let {
-        tempMinAxis,
-        tempMaxAxis,
-        humidityMinAxis,
-        humidityMaxAxis
-    } = generateAxisLimits(maxTemp, minTemp, maxHumidity, minHumidity);
-
-    const tempsGraphLayout = {
-        ...LAYOUT_BASE,
-        xaxis:
-            {
-                ...LAYOUT_BASE.xaxis,
-                tickformat: '%H:%M\n%d %b',
-                hoverformat: '%d %b %H:%M'
-            },
-        yaxis: {...LAYOUT_BASE.yaxis, title: {text:''}, range: [tempMinAxis, tempMaxAxis]},
-    }
-
-    const humidsGraphLayout = {
-        ...LAYOUT_BASE,
-        xaxis:
-            {
-                ...LAYOUT_BASE.xaxis,
-                tickformat: '%H:%M\n%d %b',
-                hoverformat: '%d %b %H:%M'
-            },
-        yaxis: {...LAYOUT_BASE.yaxis, title: {text:''}, range: [humidityMinAxis, humidityMaxAxis]},
-    }
-
-    // rebuil the graph
-    redrawPlot('daily-graph', tempTraces, tempsGraphLayout);
-    redrawPlot('daily-humidity-graph', humidityTraces, humidsGraphLayout);
+    const limits = generateAxisLimits(maxTemp, minTemp, maxHumidity, minHumidity);
+    
+    redrawPlot('daily-graph', tempTraces, getLayout({
+        xaxis: COMMON_XAXIS,
+        yaxis: { range: [limits.tempMinAxis, limits.tempMaxAxis] }
+    }));
+    
+    redrawPlot('daily-humidity-graph', humidityTraces, getLayout({
+        xaxis: COMMON_XAXIS,
+        yaxis: { range: [limits.humidityMinAxis, limits.humidityMaxAxis] }
+    }));
 }
 
 async function drawHighResGraph(filtered) {
-
-    // Group by sensor
-    const groups = {};
-    filtered.forEach(d => {
-        const name = d.sensor.name || `Sensor ${d.sensor.id}`;
-        if (!groups[name]) groups[name] = {times: [], temps: [], humids: []};
-        groups[name].times.push(parseUtcTimestamp(d.timestamp)); // in local time
-        groups[name].temps.push(d.temp);
-        groups[name].humids.push(d.humidity);
-        groups[name].id = d.sensor.id;
-    });
-
-    const colors = ['#12C35A', '#38BDF8', '#F59E0B', '#EF4444', '#8B5CF6'];
-
+    const groups = groupDataBySensor(filtered);
+    let { minTemp, maxTemp, minHumidity, maxHumidity } = INITIAL_DAILY_AXIS_LIMITS;
 
     const traces = [];
 
-    let minTemp = 40.0;
-    let maxTemp = 0.0;
-    let minHumidity = 101.0;
-    let maxHumidity = 0.0;
     for (const [name, g] of Object.entries(groups)) {
-        const col = colors[(g.id - 1) % colors.length];
+        const times = g.data.map(d => parseUtcTimestamp(d.timestamp));
+        const temps = g.data.map(d => d.temp);
+        const humids = g.data.map(d => d.humidity);
 
+        minTemp = Math.min(minTemp, ...temps);
+        maxTemp = Math.max(maxTemp, ...temps);
+        minHumidity = Math.min(minHumidity, ...humids);
+        maxHumidity = Math.max(maxHumidity, ...humids);
 
-        minTemp = Math.min(minTemp, Math.min(...g.temps));
-        maxTemp = Math.max(maxTemp, Math.max(...g.temps));
-        minHumidity = Math.min(minHumidity, Math.min(...g.humids));
-        maxHumidity = Math.max(maxHumidity, Math.max(...g.humids));
+        const col = COLORS[(g.id - 1) % COLORS.length];
 
         traces.push({
-            x: g.times, y: g.temps, name: `${name} temp`,
-            mode: 'lines', line: {color: col, width: 2},
+            x: times, y: temps, name: `${name} temp`,
+            mode: 'lines', line: { color: col, width: 2 },
             hovertemplate: '%{y:.1f}°C'
         });
         traces.push({
-            x: g.times, y: g.humids, name: `${name} humidity`,
-            mode: 'lines', line: {color: col, width: 2, dash: 'dot'},
+            x: times, y: humids, name: `${name} humidity`,
+            mode: 'lines', line: { color: col, width: 2, dash: 'dot' },
             yaxis: 'y2', hovertemplate: '%{y:.1f}%'
         });
     }
 
-    let {
-        tempMinAxis,
-        tempMaxAxis,
-        humidityMinAxis,
-        humidityMaxAxis
-    } = generateAxisLimits(maxTemp, minTemp, maxHumidity, minHumidity);
+    const limits = generateAxisLimits(maxTemp, minTemp, maxHumidity, minHumidity);
 
-    const layout = {
-        ...LAYOUT_BASE,
-        xaxis: {
-            ...LAYOUT_BASE.xaxis,
-            tickformat: '%H:%M\n%d %b',
-            hoverformat: '%d %b %H:%M'
-        },
-        yaxis: {...LAYOUT_BASE.yaxis, title: {text:''}, range: [tempMinAxis, tempMaxAxis]},
+    const layout = getLayout({
+        xaxis: COMMON_XAXIS,
+        yaxis: { range: [limits.tempMinAxis, limits.tempMaxAxis] },
         yaxis2: {
-            ...LAYOUT_BASE.yaxis2,
-            title: {text:''},
             overlaying: 'y',
             side: 'right',
-            range: [humidityMinAxis, humidityMaxAxis]
+            range: [limits.humidityMinAxis, limits.humidityMaxAxis]
+        }
+    });
 
-        },
-    };
-
-    Plotly.purge('chart-overview');
-    Plotly.newPlot('chart-overview', traces, layout, PLOT_CONFIG);
+    redrawPlot('chart-overview', traces, layout);
 }
 
 
