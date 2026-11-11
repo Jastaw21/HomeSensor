@@ -29,7 +29,7 @@ const LAYOUT_BASE = {
 };
 const PLOT_CONFIG = {responsive: true, displayModeBar: false};
 const key = new URLSearchParams(window.location.search).get('key');
-const COLORS = ['#125FC3', '#38BDF8', '#F59E0B', '#EF4444', '#8B5CF6', '#12C35A'];
+const COLORS = ['#125FC3', '#6ef838', '#F59E0B', '#EF4444', '#8B5CF6', '#12C35A'];
 const DAILY_GRAPH_FILL_COLOUR = 'rgba(14, 122, 212, 0.16)';
 
 const INITIAL_DAILY_AXIS_LIMITS = {
