@@ -1,4 +1,3 @@
-from datetime import datetime, timedelta
 import os
 
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -7,7 +6,7 @@ from fastapi.responses import FileResponse
 from fastapi.security import APIKeyHeader
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy import text
-from sqlmodel import Session, select
+from sqlmodel import Session, select, desc
 
 import archiving
 from database import init_db, get_session
@@ -76,7 +75,7 @@ def get_hourly_readings(session: Session = Depends(get_session)):
     row_number = int(14 * 24)
     readings = session.exec(
         select(HourlyReading)
-        .order_by(HourlyReading.timestamp.desc())
+        .order_by(desc(HourlyReading.timestamp))
         .limit(int(row_number))
     ).all()
     results = []
@@ -150,7 +149,7 @@ def get_granular_readings(session: Session = Depends(get_session)):
     return result
 
 
-# lookup dict for hours ago, to granularity of data to retrieve
+# look up dict for hours ago, to granularity of data to retrieve
 HISTORY_DATA_STEPS = [
     {24: "full"},
     {24 * 7: "hourly"}
@@ -214,8 +213,8 @@ def get_scaled_data(hours: int, session: Session = Depends(get_session)):
 
 @app.get("/data/record")
 def get_record(temp: bool, high: bool, session: Session = Depends(get_session)):
-    record_value: float = 0
-    record_date: str = ""
+
+
     func = "MAX" if high else "MIN"
     if temp:
         result = session.exec(
@@ -261,7 +260,10 @@ def get_records(session: Session = Depends(get_session)):
     low_humidity_record = session.exec(text(
         f"SELECT humidity, timestamp FROM sensorreading ORDER BY humidity ASC LIMIT 1")  # type: ignore
     ).first()  # type: ignore
+    if high_temp_record is None or low_temp_record is None or high_humidity_record is None or low_humidity_record is None:
+        return [
 
+        ]
     return [
         {
             "value": high_temp_record[0],

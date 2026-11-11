@@ -3,3 +3,4 @@ uvicorn
 sqlmodel
 aiofiles
 apscheduler
+sqlalchemy

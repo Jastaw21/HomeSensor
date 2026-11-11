@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!--suppress HtmlFormInputWithoutLabel -->
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -36,19 +37,21 @@
 <!-- Current readings -->
 <div class="textbox flex-textbox">
     <div>
-        <h1>Time</h1>
-        <p id="timestamp-value"></p>
+        <h1 id="timestamp-value"></h1>
+        <p>Time</p>
     </div>
+    <div class="vertical"></div>
+    <div>
+        <h1 id="temp-value"></h1>
+        <p>Temperature</p>
+    </div>
+    <div class="vertical"></div>
 
     <div>
-        <h1>Temperature</h1>
-        <p id="temp-value"></p>
+        <h1 id="humidity-value"></h1>
+        <p>Humidity</p>
     </div>
 
-    <div>
-        <h1>Humidity</h1>
-        <p id="humidity-value"></p>
-    </div>
 </div>
 
 <!-- Charts -->
@@ -95,7 +98,6 @@
     </div>
 
 </div>
-
 
 
 <script type="module" src="/static/plots.js"></script>

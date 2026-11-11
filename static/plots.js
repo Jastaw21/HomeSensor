@@ -217,7 +217,7 @@ function updateLatestReadings(data) {
         formattedTime || 'N/A';
 }
 
-// fetches the most upto date records, and calls the updateRecords function
+// fetches the most up to date records and calls the updateRecords function
 async function updateRecords() {
     const records = await fetchRecordData();
     updateRecordsCards(
@@ -251,7 +251,7 @@ function updateRecordsCards(highestTemp, lowestTemp, highestHumidity, lowestHumi
         lowestHumidity?.timestamp ? parseUtcTimestamp(lowestHumidity.timestamp).toLocaleString() : 'N/A';
 }
 
-// updates the min and max values seen so far, when building the daily graphs
+// updates the min and max values seen so far when building the daily graphs
 function updateSensorRanges(minTemp, g, maxTemp, minHumidity, maxHumidity) {
     minTemp = Math.min(minTemp, Math.min(...g.min_temps));
     maxTemp = Math.max(maxTemp, Math.max(...g.max_temps));
@@ -262,10 +262,7 @@ function updateSensorRanges(minTemp, g, maxTemp, minHumidity, maxHumidity) {
 
 // Updates the daily level summary graphs for temps and humid ranges
 async function drawDailyGraph(sensorData) {
-
-    const averageLineColour = '#1235C3';
-
-    // apply the grouping by sensor level
+// apply the grouping by sensor level
     const groups = {};
     sensorData.forEach(d => {
         const name = d.sensor.name || 'Sensor ' + d.sensor.id;
@@ -385,7 +382,7 @@ async function drawDailyGraph(sensorData) {
         yaxis: {...LAYOUT_BASE.yaxis, title: {text:''}, range: [humidityMinAxis, humidityMaxAxis]},
     }
 
-    // rebuil the grapha
+    // rebuil the graph
     redrawPlot('daily-graph', tempTraces, tempsGraphLayout);
     redrawPlot('daily-humidity-graph', humidityTraces, humidsGraphLayout);
 }
@@ -412,9 +409,6 @@ async function drawHighResGraph(filtered) {
     let maxTemp = 0.0;
     let minHumidity = 101.0;
     let maxHumidity = 0.0;
-
-    let ci = 0;
-
     for (const [name, g] of Object.entries(groups)) {
         const col = colors[(g.id - 1) % colors.length];
 
@@ -472,14 +466,14 @@ async function runPage() {
     const data = await fetchHighResData();
     const dailyData = await fetchDailyData();
 
-    // draw the top frame, the graph with 5 minute-ly data
+    // draw the top frame, the graph with 5 minutely data
     await drawHighResGraph(data);
     await drawDailyGraph(dailyData);
 
     // top readings
     updateLatestReadings(data);
 
-    // all time records
+    // all-time records
     await updateRecords();
 }
 
