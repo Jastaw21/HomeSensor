@@ -149,6 +149,9 @@ def get_granular_readings(session: Session = Depends(get_session)):
         })
     return result
 
+@app.get("/data/absolute-humidity")
+def get_absolute_humidity_readings(session: Session = Depends(get_session)):
+    pass
 
 # lookup dict for hours ago, to granularity of data to retrieve
 HISTORY_DATA_STEPS = [
