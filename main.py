@@ -3,6 +3,7 @@ import os
 
 from apscheduler.schedulers.background import BackgroundScheduler
 from fastapi import FastAPI, Depends, HTTPException, Request
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.security import APIKeyHeader
 from fastapi.staticfiles import StaticFiles
@@ -14,6 +15,15 @@ from database import init_db, get_session
 from models import SensorReading, Sensor, HourlyReading, DailyReading
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 API_KEY = os.environ.get("API_KEY")
@@ -23,6 +33,7 @@ api_key_header = APIKeyHeader(name="X-API-KEY", auto_error=False)
 def verify_key(key: str = Depends(api_key_header)):
     if key != API_KEY:
         raise HTTPException(status_code=403, detail="Forbidden")
+    return key
 
 
 scheduler = BackgroundScheduler()
@@ -71,7 +82,7 @@ def receive_data(reading: SensorReading, session: Session = Depends(get_session)
     return {"status": "ok", "id": reading.id}
 
 
-@app.get("/data/hourly")
+@app.get("/data/hourly", dependencies=[Depends(verify_key)])
 def get_hourly_readings(session: Session = Depends(get_session)):
     row_number = int(14 * 24)
     readings = session.exec(
@@ -96,7 +107,7 @@ def get_hourly_readings(session: Session = Depends(get_session)):
     return results
 
 
-@app.get("/data/daily")
+@app.get("/data/daily", dependencies=[Depends(verify_key)])
 def get_daily_readings(session: Session = Depends(get_session)):
     row_number = int(364)
     readings = session.exec(
@@ -127,7 +138,7 @@ def get_jobs():
     return [{"id": j.id, "next_run": str(j.next_run_time)} for j in jobs]
 
 
-@app.get("/data/granular")
+@app.get("/data/granular", dependencies=[Depends(verify_key)])
 def get_granular_readings(session: Session = Depends(get_session)):
     # get the last 14 days of data
     row_number = int(14 * 24 * (60 / 5))  # assuming 5 minute readings
@@ -160,7 +171,7 @@ HISTORY_DATA_STEPS = [
 ]
 
 
-@app.get("/data/consol")
+@app.get("/data/consol", dependencies=[Depends(verify_key)])
 def get_scaled_data(hours: int, session: Session = Depends(get_session)):
     granular_hours_to_retrieve = min(24, hours)
     remaining_hourly_hours_to_retrieve = hours - granular_hours_to_retrieve
@@ -215,7 +226,7 @@ def get_scaled_data(hours: int, session: Session = Depends(get_session)):
     return results
 
 
-@app.get("/data/record")
+@app.get("/data/record", dependencies=[Depends(verify_key)])
 def get_record(temp: bool, high: bool, session: Session = Depends(get_session)):
     record_value: float = 0
     record_date: str = ""
@@ -250,7 +261,7 @@ def create_sensor(sensor: Sensor, session: Session = Depends(get_session)):
     return sensor
 
 
-@app.get("/records")
+@app.get("/records", dependencies=[Depends(verify_key)])
 def get_records(session: Session = Depends(get_session)):
     high_temp_record = session.exec(text(
         f"SELECT temp, timestamp FROM sensorreading ORDER BY temp DESC LIMIT 1")  # type: ignore

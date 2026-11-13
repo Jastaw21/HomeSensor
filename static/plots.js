@@ -1,10 +1,11 @@
-const MOCK = false;
-
-
 const bodyStyle = window.getComputedStyle(document.body);
 const muted = bodyStyle.getPropertyValue('--muted');
 const border = bodyStyle.getPropertyValue('--border');
 
+// Remote API configuration for offline testing
+// To use a remote host, set these in your browser console or via a local config
+function getApiBaseUrl() { return window.API_BASE_URL || ''; }
+function getApiKey() { return window.API_KEY || new URLSearchParams(window.location.search).get('key'); }
 
 const LAYOUT_BASE = {
     paper_bgcolor: 'transparent',
@@ -28,7 +29,6 @@ const LAYOUT_BASE = {
     dragmode: false,
 };
 const PLOT_CONFIG = {responsive: true, displayModeBar: false};
-const key = new URLSearchParams(window.location.search).get('key');
 const COLORS = ['#125FC3', '#6ef838', '#F59E0B', '#EF4444', '#8B5CF6', '#12C35A'];
 const DAILY_GRAPH_FILL_COLOUR = 'rgba(14, 122, 212, 0.16)';
 
@@ -42,8 +42,13 @@ const INITIAL_DAILY_AXIS_LIMITS = {
 // Helpers
 async function apiFetch(url, params = {}) {
     const queryString = new URLSearchParams(params).toString();
-    const fullUrl = queryString ? `${url}?${queryString}` : url;
-    const res = await fetch(fullUrl, { headers: { 'X-API-Key': key } });
+    const fullUrl = getApiBaseUrl() + (queryString ? `${url}?${queryString}` : url);
+    const headers = { 'Content-Type': 'application/json' };
+    const key = getApiKey();
+    if (key) {
+        headers['X-API-KEY'] = key;
+    }
+    const res = await fetch(fullUrl, { headers });
     if (!res.ok) throw new Error(`API error ${res.status}: ${res.statusText}`);
     return res.json();
 }
@@ -109,104 +114,14 @@ function parseUtcTimestamp(timestamp) {
 }
 
 
-// Data mockers for local testing
-function generateMockHighResData() {
-    const now = Date.now();
-    const data = [];
-    const sensors = [
-        { id: 1, name: "living room" },
-        { id: 2, name: "kitchen" },
-        { id: 3, name: "bedroom" }
-    ];
-
-    sensors.forEach(s => {
-        for (let i = 200; i >= 0; i--) {
-            const baseTemp = 20 + (s.id * 2);
-            const baseHumid = 45 + (s.id * 5);
-            data.push({
-                id: i + (s.id * 1000),
-                temp: baseTemp + Math.sin(i / 20) * 4 + Math.random(),
-                humidity: baseHumid + Math.cos(i / 15) * 8 + Math.random(),
-                timestamp: new Date(now - i * 5 * 60000).toISOString(),
-                sensor_id: s.id,
-                sensor: s
-            });
-        }
-    });
-    return data;
-}
-
-function generateMockDailyData() {
-    const now = Date.now();
-    const data = [];
-    const sensors = [
-        { id: 1, name: "living room" },
-        { id: 2, name: "kitchen" },
-        { id: 3, name: "bedroom" }
-    ];
-
-    sensors.forEach(s => {
-        for (let i = 30; i >= 0; i--) {
-            const baseTemp = 20 + (s.id * 2);
-            const baseHumid = 45 + (s.id * 5);
-            data.push({
-                id: i + (s.id * 1000),
-                temp_avg: baseTemp + Math.sin(i / 10) * 2 + Math.random(),
-                temp_max: baseTemp + 5 + Math.sin(i / 10) * 2 + Math.random(),
-                temp_min: baseTemp - 5 + Math.sin(i / 10) * 2 + Math.random(),
-                humidity_avg: baseHumid + Math.cos(i / 8) * 4 + Math.random(),
-                humidity_max: baseHumid + 10 + Math.cos(i / 8) * 4 + Math.random(),
-                humidity_min: baseHumid - 10 + Math.cos(i / 8) * 4 + Math.random(),
-                timestamp: new Date(now - i * (3600000 * 24)).toISOString(),
-                sensor_id: s.id,
-                sensor: s
-            });
-        }
-    });
-
-    return data;
-}
-
-function generateMockRecordData() {
-    const now = Date.now();
-    return [
-        {
-            value: 28.5,
-            timestamp: new Date(now - 100000000).toISOString(),
-            type: "high_temp"
-        },
-        {
-            value: 15.2,
-            timestamp: new Date(now - 200000000).toISOString(),
-            type: "low_temp"
-        },
-        {
-            value: 82.1,
-            timestamp: new Date(now - 150000000).toISOString(),
-            type: "high_humidity"
-        },
-        {
-            value: 32.4,
-            timestamp: new Date(now - 250000000).toISOString(),
-            type: "low_humidity"
-        }
-    ];
-}
-
 // Data getting
 async function fetchRecordData() {
-    if (MOCK) return generateMockRecordData();
     return apiFetch('/records');
 }
 
 async function fetchDailyData() {
-    let data;
-    if (MOCK) {
-        data = generateMockDailyData();
-    } else {
-        document.getElementById('status').textContent = 'Loading...';
-        data = await apiFetch('/data/daily');
-    }
+    document.getElementById('status').textContent = 'Loading...';
+    const data = await apiFetch('/data/daily');
 
     const sensorFilter = document.getElementById('sensor-filter').value;
     updateSensorFilter(data);
@@ -230,13 +145,8 @@ function updateSensorFilter(sensorData) {
 }
 
 async function fetchHighResData() {
-    let data;
-    if (MOCK) {
-        data = generateMockHighResData();
-    } else {
-        document.getElementById('status').textContent = 'Loading...';
-        data = await apiFetch('/data/consol', { hours: '8735' });
-    }
+    document.getElementById('status').textContent = 'Loading...';
+    let data = await apiFetch('/data/consol', { hours: '8735' });
 
     const hours = parseInt(document.getElementById('range-filter').value);
     if (hours > 0) {
