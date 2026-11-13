@@ -11,6 +11,7 @@ from sqlalchemy import text
 from sqlmodel import Session, select
 
 import archiving
+from abs_humidity import rh_to_abs_humidity
 from database import init_db, get_session
 from models import SensorReading, Sensor, HourlyReading, DailyReading
 
@@ -30,21 +31,16 @@ API_KEY = os.environ.get("API_KEY")
 api_key_header = APIKeyHeader(name="X-API-KEY", auto_error=False)
 
 
-def verify_key(key: str = Depends(api_key_header)):
-    if key != API_KEY:
+def verify_key(request: Request, key: str = Depends(api_key_header)):
+    # Check header first, then query parameter
+    actual_key = key or request.query_params.get("key")
+    if actual_key != API_KEY:
         raise HTTPException(status_code=403, detail="Forbidden")
-    return key
+    return actual_key
 
 
 scheduler = BackgroundScheduler()
 scheduler_started = False
-
-
-@app.post("/admin/test-archive")
-def test_archive():
-    archiving.archive_hourly()
-    archiving.archive_daily()
-    return {"status": "ran"}
 
 
 @app.on_event("startup")
@@ -162,7 +158,21 @@ def get_granular_readings(session: Session = Depends(get_session)):
 
 @app.get("/data/absolute-humidity")
 def get_absolute_humidity_readings(session: Session = Depends(get_session)):
-    pass
+    raw = get_granular_readings()
+    results = []
+    for r in raw:
+        sensor = session.get(Sensor, r.sensor_id) if r.sensor_id else None
+        results.append(
+            {
+                "id": r.id,
+                "temp": r.temp,
+                "abs_humidity": rh_to_abs_humidity(r.temp,r.humidity),
+                "timestamp": r.timestamp,
+                "sensor_id": r.sensor_id,
+                "sensor": sensor.name if sensor else None
+            }
+        )
+    return results
 
 # lookup dict for hours ago, to granularity of data to retrieve
 HISTORY_DATA_STEPS = [

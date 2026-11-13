@@ -215,7 +215,7 @@ function updateRecordsCards(highestTemp, lowestTemp, highestHumidity, lowestHumi
 }
 
 // Updates the daily level summary graphs for temps and humid ranges
-async function drawDailyGraph(sensorData) {
+async function renderAggregatedGraphs(sensorData) {
     const groups = groupDataBySensor(sensorData);
     let { minTemp, maxTemp, minHumidity, maxHumidity } = INITIAL_DAILY_AXIS_LIMITS;
 
@@ -298,11 +298,12 @@ async function drawDailyGraph(sensorData) {
     }));
 }
 
-async function drawHighResGraph(filtered) {
+async function renderGranularGraphs(filtered) {
     const groups = groupDataBySensor(filtered);
     let { minTemp, maxTemp, minHumidity, maxHumidity } = INITIAL_DAILY_AXIS_LIMITS;
 
-    const traces = [];
+    const tempTraces = [];
+    const humidityTraces = [];
 
     for (const [name, g] of Object.entries(groups)) {
         const times = g.data.map(d => parseUtcTimestamp(d.timestamp));
@@ -316,31 +317,33 @@ async function drawHighResGraph(filtered) {
 
         const col = COLORS[(g.id - 1) % COLORS.length];
 
-        traces.push({
+        tempTraces.push({
             x: times, y: temps, name: `${name} temp`,
             mode: 'lines', line: { color: col, width: 2 },
             hovertemplate: '%{y:.1f}°C'
         });
-        traces.push({
+        humidityTraces.push({
             x: times, y: humids, name: `${name} humidity`,
             mode: 'lines', line: { color: col, width: 2, dash: 'dot' },
-            yaxis: 'y2', hovertemplate: '%{y:.1f}%'
+            hovertemplate: '%{y:.1f}%'
         });
     }
 
     const limits = generateAxisLimits(maxTemp, minTemp, maxHumidity, minHumidity);
 
-    const layout = getLayout({
+    const tempsLayout = getLayout({
         xaxis: COMMON_XAXIS,
-        yaxis: { range: [limits.tempMinAxis, limits.tempMaxAxis] },
-        yaxis2: {
-            overlaying: 'y',
-            side: 'right',
-            range: [limits.humidityMinAxis, limits.humidityMaxAxis]
-        }
+        yaxis: { range: [limits.tempMinAxis, limits.tempMaxAxis] }
     });
+    const humidsLayout = getLayout(
+        {
+            xaxis: COMMON_XAXIS,
+            yaxis: { range: [limits.humidityMinAxis, limits.humidityMaxAxis] }
+        }
+    )
 
-    redrawPlot('chart-overview', traces, layout);
+    redrawPlot('temps-overview', tempTraces, tempsLayout);
+    redrawPlot('humidity-overview', humidityTraces, humidsLayout);
 }
 
 
@@ -351,8 +354,8 @@ async function runPage() {
     const dailyData = await fetchDailyData();
 
     // draw the top frame, the graph with 5 minutely data
-    await drawHighResGraph(data);
-    await drawDailyGraph(dailyData);
+    await renderGranularGraphs(data);
+    await renderAggregatedGraphs(dailyData);
 
     // top readings
     updateLatestReadings(data);
