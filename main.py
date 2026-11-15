@@ -170,12 +170,12 @@ def get_absolute_humidity_readings(session: Session = Depends(get_session)):
     for r in raw:
         results.append(
             {
-                "id": r.id,
-                "temp": r.temp,
-                "abs_humidity": rh_to_abs_humidity(r.temp, r.humidity),
-                "timestamp": r.timestamp,
-                "sensor_id": r.sensor_id,
-                "sensor" : r.sensor
+                "id": r["id"],
+                "temp": r["temp"],
+                "abs_humidity": rh_to_abs_humidity(r["temp"], r["humidity"]),
+                "timestamp": r["timestamp"],
+                "sensor_id": r["sensor_id"],
+                "sensor" : r["sensor"]
             }
         )
     return results
