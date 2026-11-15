@@ -164,8 +164,8 @@ def get_granular_readings(session: Session = Depends(get_session)):
 
 
 @app.get("/data/absolute-humidity", dependencies=[Depends(verify_key)])
-def get_absolute_humidity_readings():
-    raw = get_granular_readings()
+def get_absolute_humidity_readings(session: Session = Depends(get_session)):
+    raw = get_granular_readings(session)
     results = []
     for r in raw:
         results.append(
