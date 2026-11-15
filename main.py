@@ -89,14 +89,16 @@ def get_hourly_readings(session: Session = Depends(get_session)):
     results = []
     for r in readings:
         sensor = session.get(Sensor, r.sensor_id) if r.sensor_id else None
+        temp_correction = sensor.temp_calibration if sensor and sensor.temp_calibration else 0.0
+        humidity_correction = sensor.humidity_calibration if sensor and sensor.humidity_calibration else 0.0
         results.append({
             "timestamp": r.timestamp,
-            "temp_avg": r.temp_avg,
-            "temp_min": r.temp_min,
-            "temp_max": r.temp_max,
-            "humidity_avg": r.humidity_avg,
-            "humidity_min": r.humidity_min,
-            "humidity_max": r.humidity_max,
+            "temp_avg": r.temp_avg + temp_correction,
+            "temp_min": r.temp_min + temp_correction,
+            "temp_max": r.temp_max + temp_correction,
+            "humidity_avg": r.humidity_avg + humidity_correction,
+            "humidity_min": r.humidity_min + humidity_correction,
+            "humidity_max": r.humidity_max + humidity_correction,
             "sensor": sensor if sensor else None
         })
 
@@ -114,14 +116,16 @@ def get_daily_readings(session: Session = Depends(get_session)):
     results = []
     for r in readings:
         sensor = session.get(Sensor, r.sensor_id) if r.sensor_id else None
+        temp_correction = sensor.temp_calibration if sensor and sensor.temp_calibration else 0.0
+        humidity_correction = sensor.humidity_calibration if sensor and sensor.humidity_calibration else 0.0
         results.append({
             "timestamp": r.timestamp,
-            "temp_avg": r.temp_avg,
-            "temp_min": r.temp_min,
-            "temp_max": r.temp_max,
-            "humidity_avg": r.humidity_avg,
-            "humidity_min": r.humidity_min,
-            "humidity_max": r.humidity_max,
+            "temp_avg": r.temp_avg + temp_correction,
+            "temp_min": r.temp_min + temp_correction,
+            "temp_max": r.temp_max + temp_correction,
+            "humidity_avg": r.humidity_avg + humidity_correction,
+            "humidity_min": r.humidity_min + humidity_correction,
+            "humidity_max": r.humidity_max + humidity_correction,
             "sensor": sensor if sensor else None
         })
 
@@ -146,33 +150,36 @@ def get_granular_readings(session: Session = Depends(get_session)):
     result = []
     for r in readings:
         sensor = session.get(Sensor, r.sensor_id) if r.sensor_id else None
+        temp_correction = sensor.temp_calibration if sensor and sensor.temp_calibration else 0.0
+        humidity_correction = sensor.humidity_calibration if sensor and sensor.humidity_calibration else 0.0
         result.append({
             "id": r.id,
-            "temp": r.temp,
-            "humidity": r.humidity,
+            "temp": r.temp + temp_correction,
+            "humidity": r.humidity + humidity_correction,
             "timestamp": r.timestamp,
             "sensor_id": r.sensor_id,
             "sensor": sensor.name if sensor else None
         })
     return result
 
-@app.get("/data/absolute-humidity")
-def get_absolute_humidity_readings(session: Session = Depends(get_session)):
+
+@app.get("/data/absolute-humidity", dependencies=[Depends(verify_key)])
+def get_absolute_humidity_readings():
     raw = get_granular_readings()
     results = []
     for r in raw:
-        sensor = session.get(Sensor, r.sensor_id) if r.sensor_id else None
         results.append(
             {
                 "id": r.id,
                 "temp": r.temp,
-                "abs_humidity": rh_to_abs_humidity(r.temp,r.humidity),
+                "abs_humidity": rh_to_abs_humidity(r.temp, r.humidity),
                 "timestamp": r.timestamp,
                 "sensor_id": r.sensor_id,
-                "sensor": sensor.name if sensor else None
+                "sensor" : r.sensor
             }
         )
     return results
+
 
 # lookup dict for hours ago, to granularity of data to retrieve
 HISTORY_DATA_STEPS = [
@@ -211,10 +218,13 @@ def get_scaled_data(hours: int, session: Session = Depends(get_session)):
 
     results = []
     for reading in hourly_readings:
+
         sensor = session.get(Sensor, reading.sensor_id) if reading.sensor_id else None
+        temp_correction = sensor.temp_calibration if sensor and sensor.temp_calibration else 0.0
+        humidity_correction = sensor.humidity_calibration if sensor and sensor.humidity_calibration else 0.0
         results.append({
-            "temp": reading.temp,
-            "humidity": reading.humidity,
+            "temp": reading.temp + temp_correction,
+            "humidity": reading.humidity + humidity_correction,
             "timestamp": reading.timestamp,
             "sensor_id": reading.sensor_id,
             "sensor": sensor if sensor else None
@@ -222,9 +232,11 @@ def get_scaled_data(hours: int, session: Session = Depends(get_session)):
 
     for reading in full_granular_readings:
         sensor = session.get(Sensor, reading.sensor_id) if reading.sensor_id else None
+        temp_correction = sensor.temp_calibration if sensor and sensor.temp_calibration else 0.0
+        humidity_correction = sensor.humidity_calibration if sensor and sensor.humidity_calibration else 0.0
         results.append({
-            "temp": reading.temp,
-            "humidity": reading.humidity,
+            "temp": reading.temp + temp_correction,
+            "humidity": reading.humidity + humidity_correction,
             "timestamp": reading.timestamp,
             "sensor_id": reading.sensor_id,
             "sensor": sensor if sensor else None
@@ -238,8 +250,6 @@ def get_scaled_data(hours: int, session: Session = Depends(get_session)):
 
 @app.get("/data/record", dependencies=[Depends(verify_key)])
 def get_record(temp: bool, high: bool, session: Session = Depends(get_session)):
-    record_value: float = 0
-    record_date: str = ""
     func = "MAX" if high else "MIN"
     if temp:
         result = session.exec(

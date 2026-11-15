@@ -7,6 +7,8 @@ from sqlmodel import SQLModel, Field
 class Sensor(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     name: str
+    temp_calibration : float
+    humidity_calibration: float
 
 
 class SensorReading(SQLModel, table=True):
